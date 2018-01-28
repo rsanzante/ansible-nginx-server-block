@@ -1,1 +1,6 @@
 ---
+
+- name: NSB reload nginx
+  service:
+    name: nginx
+    state: reloaded

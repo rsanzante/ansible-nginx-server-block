@@ -1,3 +1,61 @@
 ---
 
+- name: PRE | Get string with all involved domains
+  set_fact:
+    nsb_c_domains_string:  "{{ [nsb_main_domain]  +  nsb_secondary_domains }}"
 
+- name: PRE | Pack HTTP IPv4 configuration
+  set_fact:
+    nsb_c_http_ipv4_listen_conf:
+      interface: "{{ nsb_ipv4_interface }}"
+      port: "{{ nsb_listen_port }}"
+      ipv6: no
+  when: nsb_ipv4_interface is not none
+
+- name: PRE | Pack HTTPS IPv4 configuration
+  set_fact:
+    nsb_c_https_ipv4_listen_conf:
+      interface: "{{ nsb_ipv4_interface }}"
+      port: "{{ nsb_ssl_listen_port }}"
+      ipv6: no
+  when: nsb_ipv4_interface is not none
+
+- name: PRE | Pack HTTP IPv6 configuration
+  set_fact:
+    nsb_c_http_ipv6_listen_conf:
+      interface: "{{ nsb_ipv6_interface }}"
+      port: "{{ nsb_listen_port }}"
+      ipv6: yes
+  when: nsb_ipv6_interface != none
+
+- name: PRE | Pack HTTPS IPv6 configuration
+  set_fact:
+    nsb_c_https_ipv6_listen_conf:
+      interface: "{{ nsb_ipv6_interface }}"
+      port: "{{ nsb_ssl_listen_port }}"
+      ipv6: yes
+  when: nsb_ipv6_interface != none
+
+# Build net configuration by concatenating variables. NOTE: Not sure why
+# selecting 'sequence' values filters null values. Selected items are in fact
+# dictionaries. Are Python dictionaries actually sequences?
+- name: PRE | Build net interface listen configurations
+  set_fact:
+    nsb_c_http_net_listen_conf: "{{ ([nsb_c_http_ipv4_listen_conf]  +  [nsb_c_http_ipv6_listen_conf] + nsb_additional_http_listen_configuration)|select('sequence')|list }}"
+    nsb_c_https_net_listen_conf: "{{ ([nsb_c_https_ipv4_listen_conf]  +  [nsb_c_https_ipv6_listen_conf] + nsb_additional_https_listen_configuration)|select('sequence')|list }}"
+
+- name: SITE | Deploy server configuration file
+  template:
+    src: "nginx_server_conf.j2"
+    dest: "{{ nsb_nginx_conf_dir }}/{{ nsb_nginx_sites_available_path }}/{{ nsb_main_domain }}"
+    owner: "{{ nsb_conf_file_owner }}"
+    group: "{{ nsb_conf_file_group }}"
+    mode: 0640
+  notify: NSB reload nginx
+
+- name: SITE | Enable/disable server block configuration
+  file:
+    src: "{{ nsb_nginx_conf_dir }}/{{ nsb_nginx_sites_available_path }}/{{ nsb_main_domain }}"
+    dest: "{{ nsb_nginx_conf_dir }}/{{ nsb_nginx_sites_enabled_path }}/{{ nsb_main_domain }}"
+    state: "{{ nbs_server_block_enabled |ternary('link', 'absent') }}"
+  notify: NSB reload nginx

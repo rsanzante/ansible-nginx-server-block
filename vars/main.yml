@@ -1,2 +1,8 @@
 ---
-# vars file
+
+# Initialization of calculated variables. You don't want to mess with these
+# variables.
+nsb_c_http_ipv4_listen_conf: null
+nsb_c_http_ipv6_listen_conf: null
+nsb_c_https_ipv4_listen_conf: null
+nsb_c_https_ipv6_listen_conf: null

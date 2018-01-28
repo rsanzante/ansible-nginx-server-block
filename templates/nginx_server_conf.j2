@@ -1,0 +1,46 @@
+# {{ ansible_managed }}
+
+# Server configuration for {{ nsb_main_domain }}
+# Secondary domains: {{ nsb_secondary_domains|join(' ') }}
+#
+{% if nsb_c_http_net_listen_conf|length %}
+
+# HTTP server.
+server {
+
+  server_name {{ nsb_c_domains_string|join(' ') }};
+{% if nsb_c_http_net_listen_conf|default([])|length %}
+{% for listen_conf in nsb_c_http_net_listen_conf %}
+{% if listen_conf.ipv6 %}
+  listen [{{ (listen_conf.interface == '*') | ternary('::', listen_conf.interface) }}]:{{ listen_conf.port }};
+{% else  %}
+  listen {{ listen_conf.interface }}:{{ listen_conf.port }};
+{% endif  %}
+{% endfor %}
+{% endif  %}
+{# TODO: Add Unix socket support #}
+
+  root {{ nbs_docroot_path }};
+{% if nbs_use_error_log_file_for_site or nbs_use_access_log_file_for_site %}
+
+  # Logs.
+{% if nbs_use_access_log_file_for_site %}
+  access_log {{ nsb_log_dir_path}}/{{ nsb_main_domain }}-access.log {{ nbs_log_format_access }};
+{% endif %}
+{% if nbs_use_error_log_file_for_site %}
+  error_log {{ nsb_log_dir_path}}/{{ nsb_main_domain }}-error.log {{ nbs_log_error_level }};
+{% endif %}
+{% endif %}
+{% if nbs_server_additional_conf %}
+
+  # Additonal configuration.
+  {{ nbs_server_additional_conf|indent(2, False)}}
+{% endif %}
+{% for location in nbs_locations %}
+  location {{ location.match }} {
+    {{ location.body|indent(4, False)}}
+  }
+
+{% endfor %}
+}
+{% endif %}
