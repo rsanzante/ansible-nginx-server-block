@@ -1,0 +1,22 @@
+galaxy_info:
+  author: Ricardo Sanz
+  description:
+  company: Metadrop
+
+  license: GPLv3
+
+  min_ansible_version: 1.2
+
+  github_branch: master
+
+
+  platforms:
+    - name: Debian
+      versions:
+      - jessie
+      - squeeze
+      - wheezy
+
+  galaxy_tags: []
+
+dependencies: []
