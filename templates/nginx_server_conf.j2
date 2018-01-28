@@ -42,5 +42,14 @@ server {
   }
 
 {% endfor %}
+{% if nbs_location_snippet_ignore_ht_files %}
+
+  location ~/\.ht {
+    deny all;
+{% if nbs_location_snippet_ht_files_mask_404 %}
+    return 404;
+{% endif %}
+  }
+{% endif %}
 }
 {% endif %}

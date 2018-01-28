@@ -93,6 +93,14 @@ Optional/fine configuration variables (along with default values):
   Additional server block configuration. Use multiline syntax if more than one
   line is needed.
 
+- nbs_location_snippet_ignore_ht_files: yes
+
+  Add a location to ignore Apache's .ht* files.
+
+- nbs_location_snippet_ht_files_mask_404: yes
+
+  Mask accesses to .ht* files as Paget Not Found 404 error.
+
 
 More optional/fine configuration variables (along with default values):
 

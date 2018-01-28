@@ -20,7 +20,13 @@ nsb_nginx_sites_available_path: sites-available
 # Relative path from nsb_nginx_conf_dir to sites-enabled directory.
 nsb_nginx_sites_enabled_path: sites-enabled
 
-
+# Handy configuration snippet injections.
+########################################
+#
+# Add a location to ignore Apache's .ht* files.
+nbs_location_snippet_ignore_ht_files: yes
+# Additionally, mask those access denied error as Page Not Found 404 error.
+nbs_location_snippet_ht_files_mask_404: yes
 
 # Logs configuration.
 #####################
