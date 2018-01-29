@@ -11,7 +11,7 @@ Work in progress, alpha quality.
   - Multiple listen configuration but allows simple common configuration.
   - Múltiple location configurations.
   - Fine-grained configuration for site.
-  - (TODO) SSL configuration (supposed cert and key files are available).
+  - SSL configuration (given cert and key files are available).
   - ...
 
 
@@ -33,6 +33,11 @@ Mandatory variables:
 
 - nbs_docroot_path: Path to docroot.
 
+Mandatory when SSL is enabled:
+
+- nsb_ssl_certificate_file: Path to certificate file.
+
+- nsb_ssl_certificate_key_file: Path to certificate key file.
 
 Optional/fine configuration variables (along with default values):
 
@@ -66,15 +71,15 @@ Optional/fine configuration variables (along with default values):
 - nsb_additional_listen_configuration: []
 
   Complex listen configuration can be added to this variable if needed. See
-  defaults/main.yml to get details.
+  defaults/main.yml to get the details.
 
 - nbs_use_access_log_file_for_site: yes
 
-  Whether to use a access log file for this site or not.
+  Whether to use an access log file for this site or not.
 
 - nbs_use_error_log_file_for_site: yes
 
-  Whether to use a error log file for this site or not.
+  Whether to use an error log file for this site or not.
 
 - nsb_log_dir_path: /var/log/nginx
 
@@ -114,7 +119,6 @@ More optional/fine configuration variables (along with default values):
   Interface for IPv6 connections. If '*' all interfaces are used. If None no
   IPv6 interface is used.
 
-
 - nsb_conf_file_owner: root
 
   User to own configuration files.
@@ -137,6 +141,7 @@ but report the Nginx configuration to this role.
 Dependencies
 ------------
 
+No direct dependencies but as said above Nginx must be installed.
 
 
 Example Playbook

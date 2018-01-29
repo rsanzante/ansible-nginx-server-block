@@ -2,6 +2,7 @@
 
 # Site configuration.
 #####################
+#
 # Enable/disable site.
 nbs_server_block_enabled: yes
 #
@@ -27,6 +28,7 @@ nsb_nginx_sites_enabled_path: sites-enabled
 nbs_location_snippet_ignore_ht_files: yes
 # Additionally, mask those access denied error as Page Not Found 404 error.
 nbs_location_snippet_ht_files_mask_404: yes
+
 
 # Logs configuration.
 #####################
@@ -77,7 +79,7 @@ nsb_listen_port: 80
 # Port to listen to HTTPS connections.
 nsb_ssl_listen_port: 443
 #
-# Complex listen configuration can be added if needed. There are two varaibles,
+# Complex listen configuration can be added if needed. There are two variables,
 # one for http and a second one for https.
 # Thus it's possible for example to configure different ports and interfaces for
 # HTTP and HTTPS, or for listen IPv4 in one port and IPv6 in another port.
@@ -85,8 +87,7 @@ nsb_ssl_listen_port: 443
 # They should be a list of items, each item with the following keys:
 #   - interface: Similar to nsb_listen_interface variable.
 #   - port: Port to listen to.
-#   - ipv6: Yes if this is a ipv6 interfaces, no in other case.
-#   - ssl: Yes if this is a SSL port.
+#   - ipv6: Yes if this is a ipv6 interface, no in other case.
 #
 # Those variable ignore nsb_ipv4_interface and nsb_ipv6_interface thus even
 # if for example nsb_ipv4_interface is null you can define here a listen

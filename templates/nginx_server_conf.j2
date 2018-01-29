@@ -10,6 +10,8 @@ server {
 
   server_name {{ nsb_c_domains_string|join(' ') }};
 {% if nsb_c_http_net_listen_conf|default([])|length %}
+
+  # HTTP ports.
 {% for listen_conf in nsb_c_http_net_listen_conf %}
 {% if listen_conf.ipv6 %}
   listen [{{ (listen_conf.interface == '*') | ternary('::', listen_conf.interface) }}]:{{ listen_conf.port }};
@@ -17,6 +19,22 @@ server {
   listen {{ listen_conf.interface }}:{{ listen_conf.port }};
 {% endif  %}
 {% endfor %}
+{% endif  %}
+{% if nsb_c_https_net_listen_conf|default([])|length %}
+
+  # HTTPS ports.
+{% for listen_conf in nsb_c_https_net_listen_conf %}
+{% if listen_conf.ipv6 %}
+  listen [{{ (listen_conf.interface == '*') | ternary('::', listen_conf.interface) }}]:{{ listen_conf.port }} ssl;
+{% else  %}
+  listen {{ listen_conf.interface }}:{{ listen_conf.port }} ssl;
+{% endif  %}
+{% endfor %}
+
+  # SSL certificates.
+  ssl_certificate     {{ nsb_ssl_certificate_file }};
+  ssl_certificate_key {{ nsb_ssl_certificate_key_file }};
+
 {% endif  %}
 {# TODO: Add Unix socket support #}
 
@@ -33,7 +51,7 @@ server {
 {% endif %}
 {% if nbs_server_additional_conf %}
 
-  # Additonal configuration.
+  # Additional configuration.
   {{ nbs_server_additional_conf|indent(2, False)}}
 {% endif %}
 {% for location in nbs_locations %}
