@@ -58,11 +58,11 @@ must be installed in the system prior to use the role.
 
 - nsb_ipv4_interface: '*'
 
-  IP4 interace to listen to for HTTP and HTTPS.
+  IP4 interface to listen to for HTTP and HTTPS.
 
 - nsb_ipv6_interface: '*'
 
-  IP4 interace to listen to for HTTP and HTTPS.
+  IP4 interface to listen to for HTTP and HTTPS.
 
 - nsb_listen_port: 80
 
