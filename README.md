@@ -1,5 +1,5 @@
-Ansible Role: Nginx Server Block
-================================
+# Ansible Role: Nginx Server Block
+----------------------------------
 
 This role configures a single site using server blocks (virtual hosts using
 Apache jargon).
@@ -12,20 +12,24 @@ Work in progress, alpha quality.
   - Múltiple location configurations.
   - Fine-grained configuration for site.
   - SSL configuration (given cert and key files are available).
+  - Simple boolean variables can enable features on site (block .htaccess, block
+    source code files, block hidden directories, mask forbidden with 404, etc).
   - ...
 
 
-Requirements
-------------
+## Requirements
+---------------
 
 This role doesn't deal with Nginx installation or general configuration so Nginx
 must be installed in the system prior to use the role.
 
 
-Role Variables
+## Role Variables
 --------------
 
-Mandatory variables:
+#### Mandatory variables
+------------------------
+
 
 - nsb_main_domain: Main domain for this server block. Redirected domains will
   point to this domain. Also, it's used for generated identifiers and names,
@@ -33,13 +37,15 @@ Mandatory variables:
 
 - nbs_docroot_path: Path to docroot.
 
-Mandatory when SSL is enabled:
+#### Mandatory when SSL is enabled
+----------------------------------
 
 - nsb_ssl_certificate_file: Path to certificate file.
 
 - nsb_ssl_certificate_key_file: Path to certificate key file.
 
-Optional/fine configuration variables (along with default values):
+#### Optional/fine configuration variables (along with default value)
+---------------------------------------------------------------------
 
 - nbs_server_block_enabled: yes
 
@@ -98,6 +104,10 @@ Optional/fine configuration variables (along with default values):
   Additional server block configuration. Use multiline syntax if more than one
   line is needed.
 
+
+#### Variables to enable certain features using location blocks (along with default value)
+------------------------------------------------------------------------------------------
+
 - nbs_location_snippet_ignore_ht_files: yes
 
   Add a location to ignore Apache's .ht* files.
@@ -106,8 +116,33 @@ Optional/fine configuration variables (along with default values):
 
   Mask accesses to .ht* files as Paget Not Found 404 error.
 
+- nbs_location_snippet_dont_log_favicon: yes
 
-More optional/fine configuration variables (along with default values):
+  Do not log accesses to favicon.ico.
+
+- nbs_location_snippet_dont_log_robots_txt: yes
+
+  Do not log accesses to robots.txt.
+
+- nbs_location_snippet_allow_well_known_rc_5785: yes
+
+  Allow access to .well-known directory as stated by RFC 5785.
+
+- nbs_location_snippet_block_hidden_dirs: yes
+
+  Block access to directories that start with a period. This overlaps somewhat
+  with the block .htaccess snippet, but it's not harmful if both are enabled.
+  You may want both enabled if oyu want to mask accessed to .htaccess as 404.
+
+- nbs_location_snippet_block_php_source_and_related_files: yes
+
+  Block access to many confidential files (based on Drupal's list) like php,
+  sql, composer.json, bak, yml, etc.
+
+
+
+#### More optional/fine configuration variables (along with default value)
+--------------------------------------------------------------------------
 
 - nsb_ipv4_interface: '*'
 
@@ -127,6 +162,8 @@ More optional/fine configuration variables (along with default values):
 
   Configuration files assigned group.
 
+#### Other variables
+--------------------
 
 Optional Nginx configuration variables. Those variables DO NOT configure Nginx
 but report the Nginx configuration to this role.

@@ -28,6 +28,16 @@ nsb_nginx_sites_enabled_path: sites-enabled
 nbs_location_snippet_ignore_ht_files: yes
 # Additionally, mask those access denied error as Page Not Found 404 error.
 nbs_location_snippet_ht_files_mask_404: yes
+# Do not log favicon.
+nbs_location_snippet_dont_log_favicon: yes
+# Do not log robots.txt.
+nbs_location_snippet_dont_log_robots_txt: yes
+# Allow acces to .well-known directory as stated by RFC 5785
+nbs_location_snippet_allow_well_known_rc_5785: yes
+# Block access to directories that start with a period.
+nbs_location_snippet_block_hidden_dirs: yes
+# Block access to many confindential files (based on Drupal's list).
+nbs_location_snippet_block_php_source_and_related_files: yes
 
 
 # Logs configuration.
