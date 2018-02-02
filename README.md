@@ -12,7 +12,7 @@ Work in progress, alpha quality.
   - Múltiple location configurations.
   - Fine-grained configuration for site.
   - SSL configuration (given cert and key files are available).
-  - Simple boolean variables can enable features on site (block .htaccess, block
+  - Simple boolean variables can enable features on site (block .ht*, block
     source code files, block hidden directories, mask forbidden with 404, etc).
   - ...
 
@@ -131,8 +131,9 @@ must be installed in the system prior to use the role.
 - nbs_location_snippet_block_hidden_dirs: yes
 
   Block access to directories that start with a period. This overlaps somewhat
-  with the block .htaccess snippet, but it's not harmful if both are enabled.
-  You may want both enabled if oyu want to mask accessed to .htaccess as 404.
+  with the block Apache's .ht* files snippet, but it's not harmful if both are
+  enabled. You may want both enabled if you want to mask accessed .ht* files as
+  404.
 
 - nbs_location_snippet_block_php_source_and_related_files: yes
 
