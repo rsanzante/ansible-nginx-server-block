@@ -1,3 +1,4 @@
+#jinja2: lstrip_blocks: "True"
 # {{ ansible_managed }}
 
 # Server configuration for {{ nsb_main_domain }}
@@ -8,86 +9,86 @@
 server {
 
   server_name {{ nsb_c_domains_string|join(' ') }};
-{% if (nsb_c_http_net_listen_conf|default([])|length) or (nsb_c_https_net_listen_conf|default([])|length) %}
+  {% if (nsb_c_http_net_listen_conf|default([])|length) or (nsb_c_https_net_listen_conf|default([])|length) %}
 
   # HTTP ports.
-{% for listen_conf in nsb_c_http_net_listen_conf %}
-{% if listen_conf.ipv6 %}
+    {% for listen_conf in nsb_c_http_net_listen_conf %}
+      {% if listen_conf.ipv6 %}
   listen [{{ (listen_conf.interface == '*') | ternary('::', listen_conf.interface) }}]:{{ listen_conf.port }};
-{% else  %}
+      {% else  %}
   listen {{ listen_conf.interface }}:{{ listen_conf.port }};
-{% endif  %}
-{% endfor %}
-{% endif  %}
-{% if nsb_c_https_net_listen_conf|default([])|length %}
+      {% endif  %}
+    {% endfor %}
+  {% endif  %}
+  {% if nsb_c_https_net_listen_conf|default([])|length %}
 
   # HTTPS ports.
-{% for listen_conf in nsb_c_https_net_listen_conf %}
-{% if listen_conf.ipv6 %}
+    {% for listen_conf in nsb_c_https_net_listen_conf %}
+      {% if listen_conf.ipv6 %}
   listen [{{ (listen_conf.interface == '*') | ternary('::', listen_conf.interface) }}]:{{ listen_conf.port }} ssl;
-{% else  %}
+      {% else  %}
   listen {{ listen_conf.interface }}:{{ listen_conf.port }} ssl;
-{% endif  %}
-{% endfor %}
+      {% endif  %}
+    {% endfor %}
 
   # SSL certificates.
   ssl_certificate     {{ nsb_ssl_certificate_file }};
   ssl_certificate_key {{ nsb_ssl_certificate_key_file }};
 
-{% if nbs_force_https %}
+    {% if nbs_force_https %}
 
   # Redirect HTTP traffic to HTTPS. Yes, 'if' is evil, but 'return ...;' is
   # safe. See https://www.nginx.com/resources/wiki/start/topics/depth/ifisevil/
   if ($scheme = http) {
-{% if nbs_feature_allow_well_known_rfc_5785 %}
+      {% if nbs_feature_allow_well_known_rfc_5785 %}
     set $redirect_to_https "tr";
   }
   if ($uri !~* \.well-known/) {
     set $redirect_to_https "${redirect_to_https}ue";
   }
   if ($redirect_to_https = "true") {
-{% endif  %}
+      {% endif  %}
     return 301 https://$server_name$request_uri;
   }
-{% endif  %}
-{% endif  %}
+    {% endif  %}
+  {% endif  %}
 {# TODO: Add Unix socket support #}
 
   root {{ nbs_docroot_path }};
-{% if nbs_use_error_log_file_for_site or nbs_use_access_log_file_for_site %}
+  {% if nbs_use_error_log_file_for_site or nbs_use_access_log_file_for_site %}
 
   # Logs.
-{% if nbs_use_access_log_file_for_site %}
+    {% if nbs_use_access_log_file_for_site %}
   access_log {{ nsb_log_dir_path}}/{{ nsb_main_domain }}-access.log {{ nbs_log_format_access }};
-{% endif %}
-{% if nbs_use_error_log_file_for_site %}
+    {% endif %}
+    {% if nbs_use_error_log_file_for_site %}
   error_log {{ nsb_log_dir_path}}/{{ nsb_main_domain }}-error.log {{ nbs_log_error_level }};
-{% endif %}
-{% endif %}
-{% if nbs_feature_dont_log_favicon %}
+    {% endif %}
+  {% endif %}
+  {% if nbs_feature_dont_log_favicon %}
 
   # Do not log favicon.ico.
   location = /favicon.ico {
     log_not_found off;
     access_log off;
   }
-{% endif %}
-{% if nbs_feature_dont_log_robots_txt %}
+  {% endif %}
+  {% if nbs_feature_dont_log_robots_txt %}
 
   # Do not log robots.txt.
   location = /robots.txt {
     log_not_found off;
     access_log off;
   }
-{% endif %}
-{% if nbs_feature_allow_well_known_rfc_5785 %}
+  {% endif %}
+  {% if nbs_feature_allow_well_known_rfc_5785 %}
 
   # Allow "Well-Known URIs" described in RFC 5785.
   location ~* ^/.well-known/ {
     allow all;
   }
-{% endif %}
-{% if nbs_feature_block_hidden_dirs %}
+  {% endif %}
+  {% if nbs_feature_block_hidden_dirs %}
 
 
   # Block hidden directories (those that begin with a period). This includes
@@ -95,34 +96,34 @@ server {
   location ~ (^|/)\. {
     return 403;
   }
-{% endif %}
-{% if nbs_feature_block_php_source_and_related_files %}
+  {% endif %}
+  {% if nbs_feature_block_php_source_and_related_files %}
 
   # Block certain files that may contain confidentual information.
   location ~* \.(engine|inc|info|install|make|module|profile|test|po|sh|.*sql|theme|twig|tpl(\.php)?|xtmpl|yml)(~|\.sw[op]|\.bak|\.old|\.orig|\.save)?$|^(\.(?!well-known).*|Entries.*|Repository|Root|Tag|Template|composer\.(json|lock))$|^#.*#$|\.php(~|\.sw[op]|\.bak|\.orig|\.save)$|^.*\.php$ {
     deny all;
   }
-{% endif %}
-{% if nbs_feature_ignore_ht_files %}
+  {% endif %}
+  {% if nbs_feature_ignore_ht_files %}
 
   # Block Apache's .ht* files.
   location ~/\.ht {
     deny all;
-{% if nbs_feature_ht_files_mask_404 %}
+    {% if nbs_feature_ht_files_mask_404 %}
     return 404;
-{% endif %}
+    {% endif %}
   }
-{% endif %}
-{% if nbs_server_additional_conf %}
+  {% endif %}
+  {% if nbs_server_additional_conf %}
 
   # Additional configuration.
   {{ nbs_server_additional_conf|indent(2, False)}}
-{% endif %}
-{% for location in nbs_locations %}
+  {% endif %}
+  {% for location in nbs_locations %}
   location {{ location.match }} {
     {{ location.body|indent(4, False)}}
   }
 
-{% endfor %}
+  {% endfor %}
 }
 {% endif %}
