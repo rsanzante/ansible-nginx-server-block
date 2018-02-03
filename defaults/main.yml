@@ -8,6 +8,9 @@ nbs_server_block_enabled: yes
 #
 # Secondary domains.
 nsb_secondary_domains: []
+#
+# Force HTTPS, redirect all HTTP connections to HTTPS.
+nbs_force_https: yes
 
 
 # Nginx general configuration variables.
@@ -20,6 +23,7 @@ nsb_nginx_conf_dir: /etc/nginx
 nsb_nginx_sites_available_path: sites-available
 # Relative path from nsb_nginx_conf_dir to sites-enabled directory.
 nsb_nginx_sites_enabled_path: sites-enabled
+
 
 # Handy configuration snippet injections.
 ########################################

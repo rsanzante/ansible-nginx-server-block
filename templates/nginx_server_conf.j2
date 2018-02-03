@@ -34,6 +34,20 @@ server {
   ssl_certificate     {{ nsb_ssl_certificate_file }};
   ssl_certificate_key {{ nsb_ssl_certificate_key_file }};
 
+{% if nbs_force_https %}
+
+  # Redirect HTTP traffic to HTTPS. Yes, 'if' is evil, but 'return ...;' is
+  # safe. See https://www.nginx.com/resources/wiki/start/topics/depth/ifisevil/
+  if ($scheme = http) {
+    set $redirect_to_https "tr";
+  }
+  if ($uri !~* \.well-known/) {
+    set $redirect_to_https "${redirect_to_https}ue";
+  }
+  if ($redirect_to_https = "true") {
+    return 301 https://$server_name$request_uri;
+  }
+{% endif  %}
 {% endif  %}
 {# TODO: Add Unix socket support #}
 
