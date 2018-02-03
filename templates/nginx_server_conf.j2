@@ -96,6 +96,8 @@ server {
 {% if nbs_location_snippet_ht_files_mask_404 %}
     return 404;
 {% endif %}
+  }
+{% endif %}
 {% if nbs_server_additional_conf %}
 
   # Additional configuration.
@@ -107,7 +109,5 @@ server {
   }
 
 {% endfor %}
-  }
-{% endif %}
 }
 {% endif %}
