@@ -108,34 +108,34 @@ must be installed in the system prior to use the role.
 #### Variables to enable certain features using location blocks (along with default value)
 ------------------------------------------------------------------------------------------
 
-- nbs_location_snippet_ignore_ht_files: yes
+- nbs_feature_ignore_ht_files: yes
 
   Add a location to ignore Apache's .ht* files.
 
-- nbs_location_snippet_ht_files_mask_404: yes
+- nbs_feature_ht_files_mask_404: yes
 
   Mask accesses to .ht* files as Paget Not Found 404 error.
 
-- nbs_location_snippet_dont_log_favicon: yes
+- nbs_feature_dont_log_favicon: yes
 
   Do not log accesses to favicon.ico.
 
-- nbs_location_snippet_dont_log_robots_txt: yes
+- nbs_feature_dont_log_robots_txt: yes
 
   Do not log accesses to robots.txt.
 
-- nbs_location_snippet_allow_well_known_rc_5785: yes
+- nbs_feature_allow_well_known_rc_5785: yes
 
   Allow access to .well-known directory as stated by RFC 5785.
 
-- nbs_location_snippet_block_hidden_dirs: yes
+- nbs_feature_block_hidden_dirs: yes
 
   Block access to directories that start with a period. This overlaps somewhat
   with the block Apache's .ht* files snippet, but it's not harmful if both are
   enabled. You may want both enabled if you want to mask accessed .ht* files as
   404.
 
-- nbs_location_snippet_block_php_source_and_related_files: yes
+- nbs_feature_block_php_source_and_related_files: yes
 
   Block access to many confidential files (based on Drupal's list) like php,
   sql, composer.json, bak, yml, etc.

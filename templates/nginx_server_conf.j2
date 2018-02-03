@@ -62,7 +62,7 @@ server {
   error_log {{ nsb_log_dir_path}}/{{ nsb_main_domain }}-error.log {{ nbs_log_error_level }};
 {% endif %}
 {% endif %}
-{% if nbs_location_snippet_dont_log_favicon %}
+{% if nbs_feature_dont_log_favicon %}
 
   # Do not log favicon.ico.
   location = /favicon.ico {
@@ -70,7 +70,7 @@ server {
     access_log off;
   }
 {% endif %}
-{% if nbs_location_snippet_dont_log_robots_txt %}
+{% if nbs_feature_dont_log_robots_txt %}
 
   # Do not log robots.txt.
   location = /robots.txt {
@@ -78,14 +78,14 @@ server {
     access_log off;
   }
 {% endif %}
-{% if nbs_location_snippet_allow_well_known_rc_5785 %}
+{% if nbs_feature_allow_well_known_rc_5785 %}
 
   # Allow "Well-Known URIs" described in RFC 5785.
   location ~* ^/.well-known/ {
     allow all;
   }
 {% endif %}
-{% if nbs_location_snippet_block_hidden_dirs %}
+{% if nbs_feature_block_hidden_dirs %}
 
 
   # Block hidden directories (those that begin with a period). This includes
@@ -94,19 +94,19 @@ server {
     return 403;
   }
 {% endif %}
-{% if nbs_location_snippet_block_php_source_and_related_files %}
+{% if nbs_feature_block_php_source_and_related_files %}
 
   # Block certain files that may contain confidentual information.
   location ~* \.(engine|inc|info|install|make|module|profile|test|po|sh|.*sql|theme|twig|tpl(\.php)?|xtmpl|yml)(~|\.sw[op]|\.bak|\.old|\.orig|\.save)?$|^(\.(?!well-known).*|Entries.*|Repository|Root|Tag|Template|composer\.(json|lock))$|^#.*#$|\.php(~|\.sw[op]|\.bak|\.orig|\.save)$|^.*\.php$ {
     deny all;
   }
 {% endif %}
-{% if nbs_location_snippet_ignore_ht_files %}
+{% if nbs_feature_ignore_ht_files %}
 
   # Block Apache's .ht* files.
   location ~/\.ht {
     deny all;
-{% if nbs_location_snippet_ht_files_mask_404 %}
+{% if nbs_feature_ht_files_mask_404 %}
     return 404;
 {% endif %}
   }
