@@ -39,7 +39,7 @@ server {
   # Redirect HTTP traffic to HTTPS. Yes, 'if' is evil, but 'return ...;' is
   # safe. See https://www.nginx.com/resources/wiki/start/topics/depth/ifisevil/
   if ($scheme = http) {
-{% if nbs_feature_allow_well_known_rc_5785 %}
+{% if nbs_feature_allow_well_known_rfc_5785 %}
     set $redirect_to_https "tr";
   }
   if ($uri !~* \.well-known/) {
@@ -80,7 +80,7 @@ server {
     access_log off;
   }
 {% endif %}
-{% if nbs_feature_allow_well_known_rc_5785 %}
+{% if nbs_feature_allow_well_known_rfc_5785 %}
 
   # Allow "Well-Known URIs" described in RFC 5785.
   location ~* ^/.well-known/ {

@@ -124,7 +124,7 @@ must be installed in the system prior to use the role.
 
   Do not log accesses to robots.txt.
 
-- nbs_feature_allow_well_known_rc_5785: yes
+- nbs_feature_allow_well_known_rfc_5785: yes
 
   Allow access to .well-known directory as stated by RFC 5785.
 

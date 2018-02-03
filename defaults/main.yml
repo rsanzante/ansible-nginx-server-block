@@ -37,7 +37,7 @@ nbs_feature_dont_log_favicon: yes
 # Do not log robots.txt.
 nbs_feature_dont_log_robots_txt: yes
 # Allow acces to .well-known directory as stated by RFC 5785
-nbs_feature_allow_well_known_rc_5785: no
+nbs_feature_allow_well_known_rfc_5785: no
 # Block access to directories that start with a period.
 nbs_feature_block_hidden_dirs: yes
 # Block access to many confindential files (based on Drupal's list).
