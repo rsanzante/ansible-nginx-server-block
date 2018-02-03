@@ -39,12 +39,14 @@ server {
   # Redirect HTTP traffic to HTTPS. Yes, 'if' is evil, but 'return ...;' is
   # safe. See https://www.nginx.com/resources/wiki/start/topics/depth/ifisevil/
   if ($scheme = http) {
+{% if nbs_feature_allow_well_known_rc_5785 %}
     set $redirect_to_https "tr";
   }
   if ($uri !~* \.well-known/) {
     set $redirect_to_https "${redirect_to_https}ue";
   }
   if ($redirect_to_https = "true") {
+{% endif  %}
     return 301 https://$server_name$request_uri;
   }
 {% endif  %}
