@@ -5,11 +5,10 @@
 #
 {% if nsb_c_http_net_listen_conf|length %}
 
-# HTTP server.
 server {
 
   server_name {{ nsb_c_domains_string|join(' ') }};
-{% if nsb_c_http_net_listen_conf|default([])|length %}
+{% if (nsb_c_http_net_listen_conf|default([])|length) or (nsb_c_https_net_listen_conf|default([])|length) %}
 
   # HTTP ports.
 {% for listen_conf in nsb_c_http_net_listen_conf %}
