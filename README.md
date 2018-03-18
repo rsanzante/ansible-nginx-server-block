@@ -50,7 +50,7 @@ must be installed in the system prior to use the role.
 - nbs_server_block_enabled: yes
 
   Enables configured server block. If set to no, configuration is not loaded by
-  Nginx.
+  Nginx. This disables the server block.
 
 - nsb_secondary_domains: []
 
@@ -58,11 +58,11 @@ must be installed in the system prior to use the role.
 
 - nsb_ipv4_interface: '*'
 
-  IP4 interface to listen to for HTTP and HTTPS.
+  IPv4 interface to listen to for HTTP and HTTPS.
 
 - nsb_ipv6_interface: '*'
 
-  IP4 interface to listen to for HTTP and HTTPS.
+  IPv6 interface to listen to for HTTP and HTTPS.
 
 - nsb_listen_port: 80
 
@@ -184,6 +184,8 @@ No direct dependencies but as said above Nginx must be installed.
 
 Example Playbook
 ----------------
+
+@TODO: Add example playbook.
 
 Including an example of how to use your role (for instance, with variables passed in as parameters) is always nice for users too:
 
