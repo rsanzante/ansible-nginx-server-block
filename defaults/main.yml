@@ -11,6 +11,12 @@ nsb_secondary_domains: []
 #
 # Force HTTPS, redirect all HTTP connections to HTTPS.
 nbs_force_https: yes
+#
+# Serve site over HTTP.
+nbs_http_enabled: yes
+#
+# Serve site over HTTPS.
+nbs_https_enabled: yes
 
 
 # Nginx general configuration variables.

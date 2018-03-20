@@ -10,7 +10,7 @@
       interface: "{{ nsb_ipv4_interface }}"
       port: "{{ nsb_listen_port }}"
       ipv6: no
-  when: nsb_ipv4_interface is not none
+  when: nsb_ipv4_interface is not none and nbs_http_enabled
 
 - name: PRE | Pack HTTPS IPv4 configuration
   set_fact:
@@ -18,7 +18,7 @@
       interface: "{{ nsb_ipv4_interface }}"
       port: "{{ nsb_ssl_listen_port }}"
       ipv6: no
-  when: nsb_ipv4_interface is not none
+  when: nsb_ipv4_interface is not none and nbs_https_enabled
 
 - name: PRE | Pack HTTP IPv6 configuration
   set_fact:
@@ -26,7 +26,7 @@
       interface: "{{ nsb_ipv6_interface }}"
       port: "{{ nsb_listen_port }}"
       ipv6: yes
-  when: nsb_ipv6_interface != none
+  when: nsb_ipv6_interface != none and nbs_http_enabled
 
 - name: PRE | Pack HTTPS IPv6 configuration
   set_fact:
@@ -34,7 +34,7 @@
       interface: "{{ nsb_ipv6_interface }}"
       port: "{{ nsb_ssl_listen_port }}"
       ipv6: yes
-  when: nsb_ipv6_interface != none
+  when: nsb_ipv6_interface != none and nbs_https_enabled
 
 # Build net configuration by concatenating variables. NOTE: Not sure why
 # selecting 'sequence' values filters null values. Selected items are in fact
