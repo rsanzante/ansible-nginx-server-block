@@ -85,23 +85,9 @@ must be installed in the system prior to using this role.
 #### Mandatory variables
 ------------------------
 
-
 - nsb_main_domain: Main domain for this server block. Redirected domains will
   point to this domain. Also, it's used for generated identifiers and names,
   like the main configuration file.
-
-- nbs_docroot_path: Path to docroot.
-
-- nbs_locations: List of server locations. Each location have the following
-  properties:
-
-  - match: Location's  match clause. Mandatory.
-    Ex: `/`, `/status`, `^~ /images/`, `~* \.(gif|jpg|jpeg)$`
-
-  - body: Location's body, code inside the `{` and `}`. Mandatory.
-
-  - restriction: Restriction block attached to this location. See
-  **Restriction** section. This property is optional.
 
 #### Mandatory when SSL is enabled
 ----------------------------------
@@ -113,6 +99,24 @@ must be installed in the system prior to using this role.
 
 #### Optional/fine configuration variables (along with default value)
 ---------------------------------------------------------------------
+
+- nbs_docroot_path:
+
+  Path to docroot. If not set means that this server block probably will be
+  a redirection, proxy or something similar.
+
+- nbs_locations: []
+
+  List of server locations. Each location have the following
+  properties:
+
+  - match: Location's  match clause. Mandatory.
+    Ex: `/`, `/status`, `^~ /images/`, `~* \.(gif|jpg|jpeg)$`
+
+  - body: Location's body, code inside the `{` and `}`. Mandatory.
+
+  - restriction: Restriction block attached to this location. See
+  **Restriction** section. This property is optional.
 
 - nbs_server_block_enabled: yes
 
