@@ -101,24 +101,34 @@ nsb_listen_port: 80
 # Port to listen to HTTPS connections.
 nsb_ssl_listen_port: 443
 #
+# Enable HTTP2 in SSL.
+nsb_ssl_http2_protocol: true
+#
 # Complex listen configuration can be added if needed. There are two variables,
 # one for http and a second one for https.
 # Thus it's possible for example to configure different ports and interfaces for
 # HTTP and HTTPS, or for listen IPv4 in one port and IPv6 in another port.
 #
 # They should be a list of items, each item with the following keys:
-#   - interface: Similar to nsb_listen_interface variable.
+#   - interface: Similar to nsb_ipv4_interface and nsb_ipv6_interface variables.
 #   - port: Port to listen to.
 #   - ipv6: Yes if this is a ipv6 interface, no in other case.
+#   - http2: Yes yo use HTTP2 protocol. Only valid for SSL connections.
 #
 # Those variable ignore nsb_ipv4_interface and nsb_ipv6_interface thus even
 # if for example nsb_ipv4_interface is null you can define here a listen
 # configuration in a IPv4 interface.
-# Example:
+# Examples:
 # nsb_additional_http_listen_configuration:
 #  - interface: ::1
 #    port: 8080
 #    ipv6: yes
+#
+# nsb_additional_https_listen_configuration:
+#  - interface: ::1
+#    port: 8443
+#    ipv6: yes
+#    http2: yes
 #
 nsb_additional_http_listen_configuration: []
 nsb_additional_https_listen_configuration: []

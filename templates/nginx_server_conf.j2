@@ -40,9 +40,9 @@ server {
   # HTTPS ports.
     {% for listen_conf in nsb_c_https_net_listen_conf %}
       {% if listen_conf.ipv6 %}
-  listen [{{ (listen_conf.interface == '*') | ternary('::', listen_conf.interface) }}]:{{ listen_conf.port }} ssl;
+  listen [{{ (listen_conf.interface == '*') | ternary('::', listen_conf.interface) }}]:{{ listen_conf.port }} ssl{{ listen_conf.http2 | ternary(' http2', '') }};
       {% else  %}
-  listen {{ listen_conf.interface }}:{{ listen_conf.port }} ssl;
+  listen {{ listen_conf.interface }}:{{ listen_conf.port }} ssl{{ listen_conf.http2 | ternary(' http2', '') }};
       {% endif  %}
     {% endfor %}
 

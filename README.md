@@ -13,6 +13,7 @@ Work in progress, alpha quality.
   - Server restrictions and restrictions per location.
   - Fine-grained configuration for site.
   - SSL configuration (given cert and key files are available).
+  - HTTP2.
   - Simple boolean variables can enable features on site (block .ht*, block
     source code files, block hidden directories, mask forbidden with 404, etc).
   - ...
