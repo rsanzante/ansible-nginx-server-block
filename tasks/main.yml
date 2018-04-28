@@ -1,5 +1,7 @@
 ---
 
+- include: assertions.yml
+
 - name: PRE | Get string with all involved domains
   set_fact:
     nsb_c_domains_string:  "{{ [nsb_main_domain]  +  nsb_secondary_domains }}"
