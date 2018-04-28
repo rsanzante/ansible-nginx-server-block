@@ -1,4 +1,21 @@
 #jinja2: lstrip_blocks: "True"
+{# Use a macro to indent included template. See https://stackoverflow.com/a/10997352/907592 #}
+{% macro restrictionMacro(restriction) -%}
+{% if restriction.satisfy_any is defined and restriction.satisfy_any %}
+satisfy any;
+{% endif %}
+{% if restriction.deny_allow_list is defined and restriction.deny_allow_list|length %}
+  {% for deny_allow_line in restriction.deny_allow_list %}
+{{ deny_allow_line }};
+  {% endfor %}
+{% endif %}
+{% if restriction.basic_auth_enabled is defined and restriction.basic_auth_enabled %}
+auth_basic "{{ restriction.basic_auth_name }}";
+auth_basic_user_file {{ restriction.basic_auth_passwd_filepath }};
+{% endif %}
+{%- endmacro %}
+
+
 # {{ ansible_managed }}
 
 # Server configuration for {{ nsb_main_domain }}
@@ -20,7 +37,7 @@ server {
       {% endif  %}
     {% endfor %}
   {% endif  %}
-  {% if nsb_c_https_net_listen_conf|default([])|length %}
+    {% if nsb_c_https_net_listen_conf|default([])|length %}
 
   # HTTPS ports.
     {% for listen_conf in nsb_c_https_net_listen_conf %}
@@ -34,7 +51,12 @@ server {
   # SSL certificates.
   ssl_certificate     {{ nsb_ssl_certificate_file }};
   ssl_certificate_key {{ nsb_ssl_certificate_key_file }};
+    {% if nbs_restriction %}
 
+  # Restrictions.
+      {% set restriction = nbs_restriction %}
+{{ restrictionMacro(restriction)|indent( width=2, indentfirst=True) }}
+    {% endif %}
     {% if nbs_force_https %}
 
   # Redirect HTTP traffic to HTTPS. Yes, 'if' is evil, but 'return ...;' is
@@ -121,6 +143,10 @@ server {
   {% endif %}
   {% for location in nbs_locations %}
   location {{ location.match }} {
+    {% if location.restriction is defined and location.restriction %}
+      {% set restriction = location.restriction %}
+{{ restrictionMacro(restriction)|indent( width=4, indentfirst=True) }}
+    {% endif %}
     {{ location.body|indent(4, False)}}
   }
 

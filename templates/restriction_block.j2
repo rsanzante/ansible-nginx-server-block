@@ -1,0 +1,12 @@
+{% if restriction.satisfy_any is defined and restriction.satisfy_any %}
+satisfy any;
+{% endif %}
+{% if restriction.deny_allow_list is defined and restriction.deny_allow_list|length %}
+  {% for deny_allow_line in restriction.deny_allow_list %}
+{{ deny_allow_line }};
+  {% endfor %}
+{% endif %}
+{% if restriction.basic_auth_enabled is defined and restriction.basic_auth_enabled %}
+auth_basic "{{ restriction.basic_auth_name }}";
+auth_basic_user_file {{ restriction.basic_auth_passwd_filepath }};
+{% endif %}

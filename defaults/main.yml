@@ -17,7 +17,9 @@ nbs_http_enabled: yes
 #
 # Serve site over HTTPS.
 nbs_https_enabled: yes
-
+#
+# Server context restriction block. See **Restriction** section in README.md.
+nbs_restriction: none
 
 # Nginx general configuration variables.
 ########################################

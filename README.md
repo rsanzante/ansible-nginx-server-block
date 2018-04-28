@@ -9,7 +9,8 @@ Work in progress, alpha quality.
 **Features**
 
   - Multiple listen configuration but allows simple common configuration.
-  - Múltiple location configurations.
+  - Multiple location configurations.
+  - Server restrictions and restrictions per location.
   - Fine-grained configuration for site.
   - SSL configuration (given cert and key files are available).
   - Simple boolean variables can enable features on site (block .ht*, block
@@ -17,15 +18,68 @@ Work in progress, alpha quality.
   - ...
 
 
+**Restriction**
+
+A restriction block can be assigned to the server or to any location.
+
+Restrictions covers:
+  - Basic auth setup (with an existing htpassw file).
+  - Allow/disallow clauses.
+  - Change satisfy default value to 'any'.
+
+Restriction block properties:
+
+- satisfy_any: yes
+
+  If yes, a `satisfy any;` clause is added.
+
+- deny_allow_list: []
+
+  List of allow/deny clauses.
+
+- basic_auth_off: no
+
+  Disables the basic auth for this block. Not valid for server context, only for
+  location contexts. Used when there's a basic auth defined at server context
+  and you want to disable in a certain location. If `basic_auth_enabled` is
+  `yes` an error is triggered.
+
+- basic_auth_enabled: no
+
+  Enable basic auth.
+
+- basic_auth_name: null
+
+  Basic auth name. Mandatory when basic auth is enabled.
+
+- basic_auth_passwd_filepath: null
+
+  htpasswd file with valid users. Mandatory when basic auth is enabled.
+
+Restriction block example:
+
+    restriction:
+      satisfy: yes
+      deny_allow_list:
+        - deny 192.168.1.2
+        - allow 192.168.1.1/24
+        - allow 127.0.0.1
+        - deny all
+      basic_auth_enabled: yes
+      basic_auth_name: 'Restricted area'
+      basic_auth_passwd_filepath: '/etc/htpasswd/file'
+
+
+
 ## Requirements
 ---------------
 
 This role doesn't deal with Nginx installation or general configuration so Nginx
-must be installed in the system prior to use the role.
+must be installed in the system prior to using this role.
 
 
 ## Role Variables
---------------
+-----------------
 
 #### Mandatory variables
 ------------------------
@@ -37,12 +91,24 @@ must be installed in the system prior to use the role.
 
 - nbs_docroot_path: Path to docroot.
 
+- nbs_locations: List of server locations. Each location have the following
+  properties:
+
+  - match: Location's  match clause. Mandatory.
+    Ex: `/`, `/status`, `^~ /images/`, `~* \.(gif|jpg|jpeg)$`
+
+  - body: Location's body, code inside the `{` and `}`. Mandatory.
+
+  - restriction: Restriction block attached to this location. See
+  **Restriction** section. This property is optional.
+
 #### Mandatory when SSL is enabled
 ----------------------------------
 
 - nsb_ssl_certificate_file: Path to certificate file.
 
 - nsb_ssl_certificate_key_file: Path to certificate key file.
+
 
 #### Optional/fine configuration variables (along with default value)
 ---------------------------------------------------------------------
@@ -98,6 +164,10 @@ must be installed in the system prior to use the role.
 - nbs_log_error_level: error
 
   Log level for error log.
+
+- nbs_restriction: none
+
+  Server context restriction block. See **Restriction** section.
 
 - nbs_server_additional_conf: null
 
