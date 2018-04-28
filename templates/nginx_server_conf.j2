@@ -14,8 +14,6 @@ auth_basic "{{ restriction.basic_auth_name }}";
 auth_basic_user_file {{ restriction.basic_auth_passwd_filepath }};
 {% endif %}
 {%- endmacro %}
-
-
 # {{ ansible_managed }}
 
 # Server configuration for {{ nsb_main_domain }}
