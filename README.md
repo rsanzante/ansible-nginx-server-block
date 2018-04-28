@@ -255,13 +255,49 @@ No direct dependencies but as said above Nginx must be installed.
 Example Playbook
 ----------------
 
-@TODO: Add example playbook.
 
-Including an example of how to use your role (for instance, with variables passed in as parameters) is always nice for users too:
+Simplest block server with just one simple location.
 
     - hosts: servers
       roles:
-         - { role: username.rolename, x: 42 }
+         - role: metadrop.nginx_server_block
+           nsb_main_domain: "mydomain.com"
+           nbs_docroot_path: "/var/vhosts/mydomain.com"
+           nbs_locations:
+             - match: "/"
+               body: |
+                 root   /var/www/html;
+                 index  index.html index.htm;
+
+
+BLock server with more options, SSL and restriction applied.
+
+    - hosts: servers
+      roles:
+         - role: metadrop.nginx_server_block
+           nsb_main_domain: "mydomain.com"
+           nsb_secondary_domains: "www.mydomain.com"
+           nbs_docroot_path: "/var/vhosts/mydomain.com"
+*          nbs_log_format_access: upstreamlog
+           nbs_https_enabled: yes
+           nsb_ssl_certificate_file: /var/ssl/certs/mydomain.com/fullchain.pem
+           nsb_ssl_certificate_key_file: /var/ssl/certs/mydomain.com/privatekey.pem
+           nbs_restriction:
+             satisfy: yes
+             deny_allow_list:
+               - deny 192.168.10.2
+               - allow 192.168.10.1/24
+               - allow 127.0.0.1
+               - deny all
+             basic_auth_enabled: yes
+             basic_auth_name: 'Restricted area'
+             basic_auth_passwd_filepath: '/etc/htpasswd/mydomain.com/htpasswd'
+           nbs_locations:
+             - match: "/"
+               body: |
+                 root   /var/www/html;
+                 index  index.html index.htm;
+
 
 License
 -------
