@@ -279,7 +279,6 @@ Block server with more options, SSL and restriction applied.
            nsb_main_domain: "mydomain.com"
            nsb_secondary_domains: "www.mydomain.com"
            nbs_docroot_path: "/var/vhosts/mydomain.com"
-*          nbs_log_format_access: upstreamlog
            nbs_https_enabled: yes
            nsb_ssl_certificate_file: /var/ssl/certs/mydomain.com/fullchain.pem
            nsb_ssl_certificate_key_file: /var/ssl/certs/mydomain.com/privatekey.pem
