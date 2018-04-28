@@ -271,7 +271,7 @@ Simplest block server with just one simple location.
                  index  index.html index.htm;
 
 
-BLock server with more options, SSL and restriction applied.
+Block server with more options, SSL and restriction applied.
 
     - hosts: servers
       roles:
