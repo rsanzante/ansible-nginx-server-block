@@ -49,18 +49,18 @@ server {
   # SSL certificates.
   ssl_certificate     {{ nsb_ssl_certificate_file }};
   ssl_certificate_key {{ nsb_ssl_certificate_key_file }};
-    {% if nbs_restriction is defined %}
+    {% if nsb_restriction is defined %}
 
   # Restrictions.
-      {% set restriction = nbs_restriction %}
+      {% set restriction = nsb_restriction %}
 {{ restrictionMacro(restriction)|indent( width=2, indentfirst=True) }}
     {% endif %}
-    {% if nbs_force_https %}
+    {% if nsb_force_https %}
 
   # Redirect HTTP traffic to HTTPS. Yes, 'if' is evil, but 'return ...;' is
   # safe. See https://www.nginx.com/resources/wiki/start/topics/depth/ifisevil/
   if ($scheme = http) {
-      {% if nbs_feature_allow_well_known_rfc_5785 %}
+      {% if nsb_feature_allow_well_known_rfc_5785 %}
     set $redirect_to_https "tr";
   }
   if ($uri !~* \.well-known/) {
@@ -73,21 +73,21 @@ server {
     {% endif  %}
   {% endif  %}
 {# TODO: Add Unix socket support #}
-  {% if nbs_docroot_path is defined %}
+  {% if nsb_docroot_path is defined %}
 
-  root {{ nbs_docroot_path }};
+  root {{ nsb_docroot_path }};
   {% endif %}
-  {% if nbs_use_error_log_file_for_site or nbs_use_access_log_file_for_site %}
+  {% if nsb_use_error_log_file_for_site or nsb_use_access_log_file_for_site %}
 
   # Logs.
-    {% if nbs_use_access_log_file_for_site %}
-  access_log {{ nsb_log_dir_path}}/{{ nsb_c_main_domain }}-access.log {{ nbs_log_format_access }};
+    {% if nsb_use_access_log_file_for_site %}
+  access_log {{ nsb_log_dir_path}}/{{ nsb_c_main_domain }}-access.log {{ nsb_log_format_access }};
     {% endif %}
-    {% if nbs_use_error_log_file_for_site %}
-  error_log {{ nsb_log_dir_path}}/{{ nsb_c_main_domain }}-error.log {{ nbs_log_error_level }};
+    {% if nsb_use_error_log_file_for_site %}
+  error_log {{ nsb_log_dir_path}}/{{ nsb_c_main_domain }}-error.log {{ nsb_log_error_level }};
     {% endif %}
   {% endif %}
-  {% if nbs_feature_dont_log_favicon %}
+  {% if nsb_feature_dont_log_favicon %}
 
   # Do not log favicon.ico.
   location = /favicon.ico {
@@ -95,7 +95,7 @@ server {
     access_log off;
   }
   {% endif %}
-  {% if nbs_feature_dont_log_robots_txt %}
+  {% if nsb_feature_dont_log_robots_txt %}
 
   # Do not log robots.txt.
   location = /robots.txt {
@@ -103,14 +103,14 @@ server {
     access_log off;
   }
   {% endif %}
-  {% if nbs_feature_allow_well_known_rfc_5785 %}
+  {% if nsb_feature_allow_well_known_rfc_5785 %}
 
   # Allow "Well-Known URIs" described in RFC 5785.
   location ~* ^/.well-known/ {
     allow all;
   }
   {% endif %}
-  {% if nbs_feature_block_hidden_dirs %}
+  {% if nsb_feature_block_hidden_dirs %}
 
 
   # Block hidden directories (those that begin with a period). This includes
@@ -119,29 +119,29 @@ server {
     return 403;
   }
   {% endif %}
-  {% if nbs_feature_block_php_source_and_related_files %}
+  {% if nsb_feature_block_php_source_and_related_files %}
 
   # Block certain files that may contain confidentual information.
   location ~* \.(engine|inc|info|install|make|module|profile|test|po|sh|.*sql|theme|twig|tpl(\.php)?|xtmpl|yml)(~|\.sw[op]|\.bak|\.old|\.orig|\.save)?$|^(\.(?!well-known).*|Entries.*|Repository|Root|Tag|Template|composer\.(json|lock))$|^#.*#$|\.php(~|\.sw[op]|\.bak|\.orig|\.save)$|^.*\.php$ {
     deny all;
   }
   {% endif %}
-  {% if nbs_feature_ignore_ht_files %}
+  {% if nsb_feature_ignore_ht_files %}
 
   # Block Apache's .ht* files.
   location ~/\.ht {
     deny all;
-    {% if nbs_feature_ht_files_mask_404 %}
+    {% if nsb_feature_ht_files_mask_404 %}
     return 404;
     {% endif %}
   }
   {% endif %}
-  {% if nbs_server_additional_conf %}
+  {% if nsb_server_additional_conf %}
 
   # Additional configuration.
-  {{ nbs_server_additional_conf|indent(2, False)}}
+  {{ nsb_server_additional_conf|indent(2, False)}}
   {% endif %}
-  {% for location in nbs_locations %}
+  {% for location in nsb_locations %}
   location {{ location.match }} {
     {% if location.restriction is defined and location.restriction %}
       {% set restriction = location.restriction %}

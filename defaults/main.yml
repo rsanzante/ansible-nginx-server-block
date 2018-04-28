@@ -4,19 +4,19 @@
 #####################
 #
 # Enable/disable site.
-nbs_server_block_enabled: yes
+nsb_server_block_enabled: yes
 #
 # Force HTTPS, redirect all HTTP connections to HTTPS.
-nbs_force_https: yes
+nsb_force_https: yes
 #
 # Serve site over HTTP.
-nbs_http_enabled: yes
+nsb_http_enabled: yes
 #
 # Serve site over HTTPS.
-nbs_https_enabled: yes
+nsb_https_enabled: yes
 #
 # By default nolocations are defined.
-nbs_locations : []
+nsb_locations : []
 
 # Nginx general configuration variables.
 ########################################
@@ -34,19 +34,19 @@ nsb_nginx_sites_enabled_path: sites-enabled
 ###############################
 #
 # Add a location to ignore Apache's .ht* files.
-nbs_feature_ignore_ht_files: yes
+nsb_feature_ignore_ht_files: yes
 # Additionally, mask those access denied error as Page Not Found 404 error.
-nbs_feature_ht_files_mask_404: yes
+nsb_feature_ht_files_mask_404: yes
 # Do not log favicon.
-nbs_feature_dont_log_favicon: yes
+nsb_feature_dont_log_favicon: yes
 # Do not log robots.txt.
-nbs_feature_dont_log_robots_txt: yes
+nsb_feature_dont_log_robots_txt: yes
 # Allow acces to .well-known directory as stated by RFC 5785
-nbs_feature_allow_well_known_rfc_5785: yes
+nsb_feature_allow_well_known_rfc_5785: yes
 # Block access to directories that start with a period.
-nbs_feature_block_hidden_dirs: yes
+nsb_feature_block_hidden_dirs: yes
 # Block access to many confindential files (based on Drupal's list).
-nbs_feature_block_php_source_and_related_files: yes
+nsb_feature_block_php_source_and_related_files: yes
 
 
 # Logs configuration.
@@ -56,16 +56,16 @@ nbs_feature_block_php_source_and_related_files: yes
 nsb_log_dir_path: /var/log/nginx
 #
 # Whether to use a access log file for this site or not.
-nbs_use_access_log_file_for_site: yes
+nsb_use_access_log_file_for_site: yes
 #
 # Whether to use a error log file for this site or not.
-nbs_use_error_log_file_for_site: yes
+nsb_use_error_log_file_for_site: yes
 #
 # Log format used for access log.
-nbs_log_format_access: combined
+nsb_log_format_access: combined
 #
 # Log level for error log.
-nbs_log_error_level: error
+nsb_log_error_level: error
 #
 
 
@@ -74,7 +74,7 @@ nbs_log_error_level: error
 #
 # Additional server block configuration. Use multiline syntax if more than one
 # line is needed.
-nbs_server_additional_conf: null
+nsb_server_additional_conf: null
 #
 # Configuration file owner and group.
 nsb_conf_file_owner: root

@@ -101,12 +101,12 @@ must be installed in the system prior to using this role.
 #### Optional/fine configuration variables (along with default value)
 ---------------------------------------------------------------------
 
-- nbs_docroot_path:
+- nsb_docroot_path:
 
   Path to docroot. If not set means that this server block probably will be
   a redirection, proxy or something similar.
 
-- nbs_locations: []
+- nsb_locations: []
 
   List of server locations. Each location have the following
   properties:
@@ -119,7 +119,7 @@ must be installed in the system prior to using this role.
   - restriction: Restriction block attached to this location. See
   **Restriction** section. This property is optional.
 
-- nbs_server_block_enabled: yes
+- nsb_server_block_enabled: yes
 
   Enables configured server block. If set to no, configuration is not loaded by
   Nginx. This disables the server block.
@@ -147,11 +147,11 @@ must be installed in the system prior to using this role.
   Complex listen configuration can be added to this variable if needed. See
   defaults/main.yml to get the details.
 
-- nbs_use_access_log_file_for_site: yes
+- nsb_use_access_log_file_for_site: yes
 
   Whether to use an access log file for this site or not.
 
-- nbs_use_error_log_file_for_site: yes
+- nsb_use_error_log_file_for_site: yes
 
   Whether to use an error log file for this site or not.
 
@@ -159,19 +159,19 @@ must be installed in the system prior to using this role.
 
   Directory where to put the log files.
 
-- nbs_log_format_access: combined
+- nsb_log_format_access: combined
 
   Log format used for access log.
 
-- nbs_log_error_level: error
+- nsb_log_error_level: error
 
   Log level for error log.
 
-- nbs_restriction: none
+- nsb_restriction: none
 
   Server context restriction block. See **Restriction** section.
 
-- nbs_server_additional_conf: null
+- nsb_server_additional_conf: null
 
   Additional server block configuration. Use multiline syntax if more than one
   line is needed.
@@ -180,34 +180,34 @@ must be installed in the system prior to using this role.
 #### Variables to enable certain features using location blocks (along with default value)
 ------------------------------------------------------------------------------------------
 
-- nbs_feature_ignore_ht_files: yes
+- nsb_feature_ignore_ht_files: yes
 
   Add a location to ignore Apache's .ht* files.
 
-- nbs_feature_ht_files_mask_404: yes
+- nsb_feature_ht_files_mask_404: yes
 
   Mask accesses to .ht* files as Paget Not Found 404 error.
 
-- nbs_feature_dont_log_favicon: yes
+- nsb_feature_dont_log_favicon: yes
 
   Do not log accesses to favicon.ico.
 
-- nbs_feature_dont_log_robots_txt: yes
+- nsb_feature_dont_log_robots_txt: yes
 
   Do not log accesses to robots.txt.
 
-- nbs_feature_allow_well_known_rfc_5785: yes
+- nsb_feature_allow_well_known_rfc_5785: yes
 
   Allow access to .well-known directory as stated by RFC 5785.
 
-- nbs_feature_block_hidden_dirs: yes
+- nsb_feature_block_hidden_dirs: yes
 
   Block access to directories that start with a period. This overlaps somewhat
   with the block Apache's .ht* files snippet, but it's not harmful if both are
   enabled. You may want both enabled if you want to mask accessed .ht* files as
   404.
 
-- nbs_feature_block_php_source_and_related_files: yes
+- nsb_feature_block_php_source_and_related_files: yes
 
   Block access to many confidential files (based on Drupal's list) like php,
   sql, composer.json, bak, yml, etc.
@@ -264,8 +264,8 @@ Simplest block server with just one simple location.
       roles:
          - role: metadrop.nginx_server_block
            nsb_domains: "mydomain.com"
-           nbs_docroot_path: "/var/vhosts/mydomain.com"
-           nbs_locations:
+           nsb_docroot_path: "/var/vhosts/mydomain.com"
+           nsb_locations:
              - match: "/"
                body: |
                  root   /var/www/html;
@@ -278,11 +278,11 @@ Block server with more options, SSL and restriction applied.
       roles:
          - role: metadrop.nginx_server_block
            nsb_domains: "mydomain.com www.mydomain.com"
-           nbs_docroot_path: "/var/vhosts/mydomain.com"
-           nbs_https_enabled: yes
+           nsb_docroot_path: "/var/vhosts/mydomain.com"
+           nsb_https_enabled: yes
            nsb_ssl_certificate_file: /var/ssl/certs/mydomain.com/fullchain.pem
            nsb_ssl_certificate_key_file: /var/ssl/certs/mydomain.com/privatekey.pem
-           nbs_restriction:
+           nsb_restriction:
              satisfy: yes
              deny_allow_list:
                - deny 192.168.10.2
@@ -292,7 +292,7 @@ Block server with more options, SSL and restriction applied.
              basic_auth_enabled: yes
              basic_auth_name: 'Restricted area'
              basic_auth_passwd_filepath: '/etc/htpasswd/mydomain.com/htpasswd'
-           nbs_locations:
+           nsb_locations:
              - match: "/"
                body: |
                  root   /var/www/html;
