@@ -73,8 +73,10 @@ server {
     {% endif  %}
   {% endif  %}
 {# TODO: Add Unix socket support #}
+  {% if nbs_docroot_path is defined %}
 
   root {{ nbs_docroot_path }};
+  {% endif %}
   {% if nbs_use_error_log_file_for_site or nbs_use_access_log_file_for_site %}
 
   # Logs.
