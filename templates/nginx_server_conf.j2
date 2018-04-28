@@ -16,14 +16,14 @@ auth_basic_user_file {{ restriction.basic_auth_passwd_filepath }};
 {%- endmacro %}
 # {{ ansible_managed }}
 
-# Server configuration for {{ nsb_main_domain }}
-# Secondary domains: {{ nsb_secondary_domains|join(' ') }}
+# Server configuration for {{ nsb_c_main_domain }}
+# Secondary domains: {{ nsb_c_secondary_domains | join(' ') }}
 #
 {% if nsb_c_http_net_listen_conf|length %}
 
 server {
 
-  server_name {{ nsb_c_domains_string|join(' ') }};
+  server_name {{ nsb_c_domains_string }};
   {% if (nsb_c_http_net_listen_conf|default([])|length) or (nsb_c_https_net_listen_conf|default([])|length) %}
 
   # HTTP ports.
@@ -81,10 +81,10 @@ server {
 
   # Logs.
     {% if nbs_use_access_log_file_for_site %}
-  access_log {{ nsb_log_dir_path}}/{{ nsb_main_domain }}-access.log {{ nbs_log_format_access }};
+  access_log {{ nsb_log_dir_path}}/{{ nsb_c_main_domain }}-access.log {{ nbs_log_format_access }};
     {% endif %}
     {% if nbs_use_error_log_file_for_site %}
-  error_log {{ nsb_log_dir_path}}/{{ nsb_main_domain }}-error.log {{ nbs_log_error_level }};
+  error_log {{ nsb_log_dir_path}}/{{ nsb_c_main_domain }}-error.log {{ nbs_log_error_level }};
     {% endif %}
   {% endif %}
   {% if nbs_feature_dont_log_favicon %}

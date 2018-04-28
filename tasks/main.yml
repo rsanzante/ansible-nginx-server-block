@@ -2,9 +2,17 @@
 
 - include: assertions.yml
 
+- name: PRE | Get main domain.
+  set_fact:
+    nsb_c_main_domain: "{{ nsb_domains | first }}"
+
+- name: PRE | Get secondary domain list.
+  set_fact:
+    nsb_c_secondary_domains: "{{ nsb_domains | difference(nsb_c_main_domain) }}"
+
 - name: PRE | Get string with all involved domains
   set_fact:
-    nsb_c_domains_string:  "{{ [nsb_main_domain]  +  nsb_secondary_domains }}"
+    nsb_c_domains_string:  "{{ nsb_domains | join(' ') }}"
 
 - name: PRE | Pack HTTP IPv4 configuration
   set_fact:
@@ -51,7 +59,7 @@
 - name: SITE | Deploy server configuration file
   template:
     src: "nginx_server_conf.j2"
-    dest: "{{ nsb_nginx_conf_dir }}/{{ nsb_nginx_sites_available_path }}/{{ nsb_main_domain }}"
+    dest: "{{ nsb_nginx_conf_dir }}/{{ nsb_nginx_sites_available_path }}/{{ nsb_c_main_domain }}"
     owner: "{{ nsb_conf_file_owner }}"
     group: "{{ nsb_conf_file_group }}"
     mode: 0640
@@ -59,7 +67,7 @@
 
 - name: SITE | Enable/disable server block configuration
   file:
-    src: "{{ nsb_nginx_conf_dir }}/{{ nsb_nginx_sites_available_path }}/{{ nsb_main_domain }}"
-    dest: "{{ nsb_nginx_conf_dir }}/{{ nsb_nginx_sites_enabled_path }}/{{ nsb_main_domain }}"
+    src: "{{ nsb_nginx_conf_dir }}/{{ nsb_nginx_sites_available_path }}/{{ nsb_c_main_domain }}"
+    dest: "{{ nsb_nginx_conf_dir }}/{{ nsb_nginx_sites_enabled_path }}/{{ nsb_c_main_domain }}"
     state: "{{ nbs_server_block_enabled |ternary('link', 'absent') }}"
   notify: NSB reload nginx

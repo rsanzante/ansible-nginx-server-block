@@ -85,9 +85,10 @@ must be installed in the system prior to using this role.
 #### Mandatory variables
 ------------------------
 
-- nsb_main_domain: Main domain for this server block. Redirected domains will
-  point to this domain. Also, it's used for generated identifiers and names,
-  like the main configuration file.
+- nsb_domains: List of domains for this server block. At least one domain must
+  be delvared. The first domain will be considered the main domain for this
+  server block. Redirected domains will point to this main domain. Also,
+  it's used for generated identifiers and names, like the main configuration file.
 
 #### Mandatory when SSL is enabled
 ----------------------------------
@@ -122,10 +123,6 @@ must be installed in the system prior to using this role.
 
   Enables configured server block. If set to no, configuration is not loaded by
   Nginx. This disables the server block.
-
-- nsb_secondary_domains: []
-
-  List of seconday domains for this server block.
 
 - nsb_ipv4_interface: '*'
 
@@ -266,7 +263,7 @@ Simplest block server with just one simple location.
     - hosts: servers
       roles:
          - role: metadrop.nginx_server_block
-           nsb_main_domain: "mydomain.com"
+           nsb_domains: "mydomain.com"
            nbs_docroot_path: "/var/vhosts/mydomain.com"
            nbs_locations:
              - match: "/"
@@ -280,8 +277,7 @@ Block server with more options, SSL and restriction applied.
     - hosts: servers
       roles:
          - role: metadrop.nginx_server_block
-           nsb_main_domain: "mydomain.com"
-           nsb_secondary_domains: "www.mydomain.com"
+           nsb_domains: "mydomain.com www.mydomain.com"
            nbs_docroot_path: "/var/vhosts/mydomain.com"
            nbs_https_enabled: yes
            nsb_ssl_certificate_file: /var/ssl/certs/mydomain.com/fullchain.pem

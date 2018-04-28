@@ -6,9 +6,6 @@
 # Enable/disable site.
 nbs_server_block_enabled: yes
 #
-# Secondary domains.
-nsb_secondary_domains: []
-#
 # Force HTTPS, redirect all HTTP connections to HTTPS.
 nbs_force_https: yes
 #

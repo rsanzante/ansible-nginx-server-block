@@ -8,3 +8,6 @@
     msg: "SSL is requested but certificate key file is not set. Please set nsb_ssl_certificate_key_file variable with the path to the certificate key file."
   when: nbs_https_enabled and nsb_ssl_certificate_key_file is undefined
 
+- fail:
+    msg: "The domain list es empty. Please provide at least one domain name in the nsb_domains variable."
+  when: nsb_domains| length == 0
