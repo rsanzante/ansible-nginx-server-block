@@ -49,7 +49,7 @@ server {
   # SSL certificates.
   ssl_certificate     {{ nsb_ssl_certificate_file }};
   ssl_certificate_key {{ nsb_ssl_certificate_key_file }};
-    {% if nbs_restriction %}
+    {% if nbs_restriction is defined %}
 
   # Restrictions.
       {% set restriction = nbs_restriction %}
