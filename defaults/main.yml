@@ -18,6 +18,8 @@ nbs_http_enabled: yes
 # Serve site over HTTPS.
 nbs_https_enabled: yes
 #
+# By default nolocations are defined.
+nbs_locations : []
 
 # Nginx general configuration variables.
 ########################################
