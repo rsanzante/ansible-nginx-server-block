@@ -274,6 +274,7 @@ Simplest block server with just one simple location.
          - role: metadrop.nginx_server_block
            nsb_domains: "mydomain.com"
            nsb_docroot_path: "/var/vhosts/mydomain.com"
+           nsb_https_enabled: no
            nsb_locations:
              - match: "/"
                body: |
