@@ -85,6 +85,7 @@ This role doesn't deal with Nginx installation or general configuration so Nginx
 must be installed in the system prior to using this role.
 
 You can try for example this role to install Nginx: https://galaxy.ansible.com/HanXHX/nginx/
+Or this one: https://galaxy.ansible.com/jdauphant/nginx/
 
 
 ## Role Variables
