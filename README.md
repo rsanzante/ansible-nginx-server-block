@@ -308,6 +308,7 @@ Block server with more options, SSL and restriction applied.
 
 
 Block server with a simple redirction to another domain.
+
     - hosts: servers
       roles:
          - role: metadrop.nginx_server_block
