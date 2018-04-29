@@ -1,5 +1,16 @@
 ---
+
 - hosts: localhost
   remote_user: root
+  connection: local
   roles:
-    - metadrop.nginx_server_block
+    - role: metadrop.nginx_server_block
+      nsb_domains:
+        - mydomain.com
+      nsb_docroot_path: "/var/vhosts/mydomain.com"
+      nsb_https_enabled: no
+      nsb_locations:
+        - match: "/"
+          body: |
+            root   /var/www/html;
+            index  index.html index.htm;
