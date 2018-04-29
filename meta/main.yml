@@ -1,11 +1,11 @@
 galaxy_info:
   author: Ricardo Sanz
-  description:
+  description: This role configures a single site using server blocks (virtual hosts using Apache jargon).
   company: Metadrop
 
   license: GPLv3
 
-  min_ansible_version: 1.2
+  min_ansible_version: 2.4
 
   github_branch: master
 
@@ -13,10 +13,11 @@ galaxy_info:
   platforms:
     - name: Debian
       versions:
+      - stretch
       - jessie
       - squeeze
       - wheezy
 
-  galaxy_tags: []
+  galaxy_tags: [web, nginx, proxy, ssl, webserver, http, http2, https ]
 
 dependencies: []

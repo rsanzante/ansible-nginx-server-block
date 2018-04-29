@@ -4,7 +4,11 @@
 This role configures a single site using server blocks (virtual hosts using
 Apache jargon).
 
-Work in progress, alpha quality.
+Work in progress, alpha quality. Only tested in Debian, but might work in other
+platforms. Only testedwith Ansible 2.4, but it might work with other ansible
+releases.
+
+A working Nginx should be configured, this role doesn't install it.
 
 **Features**
 
@@ -16,7 +20,7 @@ Work in progress, alpha quality.
   - HTTP2.
   - Simple boolean variables can enable features on site (block .ht*, block
     source code files, block hidden directories, mask forbidden with 404, etc).
-  - ...
+
 
 
 **Restriction**
@@ -27,6 +31,8 @@ Restrictions covers:
   - Basic auth setup (with an existing htpassw file).
   - Allow/disallow clauses.
   - Change satisfy default value to 'any'.
+
+See https://docs.nginx.com/nginx/admin-guide/security-controls/configuring-http-basic-authentication/.
 
 Restriction block properties:
 
@@ -77,6 +83,8 @@ Restriction block example:
 
 This role doesn't deal with Nginx installation or general configuration so Nginx
 must be installed in the system prior to using this role.
+
+You can try for example this role to install Nginx: https://galaxy.ansible.com/HanXHX/nginx/
 
 
 ## Role Variables
@@ -203,8 +211,8 @@ must be installed in the system prior to using this role.
 - nsb_feature_block_hidden_dirs: yes
 
   Block access to directories that start with a period. This overlaps somewhat
-  with the block Apache's .ht* files snippet, but it's not harmful if both are
-  enabled. You may want both enabled if you want to mask accessed .ht* files as
+  with the block Apache's .ht files snippet, but it's not harmful if both are
+  enabled. You may want both enabled if you want to mask accessed .ht files as
   404.
 
 - nsb_feature_block_php_source_and_related_files: yes
@@ -297,6 +305,54 @@ Block server with more options, SSL and restriction applied.
                body: |
                  root   /var/www/html;
                  index  index.html index.htm;
+
+
+Block server with a simple redirction to another domain.
+    - hosts: servers
+      roles:
+         - role: metadrop.nginx_server_block
+           nsb_domains: "my-old-domain.com"
+           nsb_server_additional_conf: "return 301 https://my-new-domain.com$request_uri;"
+           nsb_force_https: no
+
+
+Block server that acts as a proxy cache. Note that web_backend proxy must be
+defined in the Nginx config elsewhere.
+
+    - hosts: servers
+      roles:
+         - role: metadrop.nginx_server_block
+           nsb_domains: "mydomain.com www.mydomain.com"
+           nsb_docroot_path: "/var/vhosts/mydomain.com"
+           nsb_https_enabled: yes
+           nsb_ssl_certificate_file: /var/ssl/certs/mydomain.com/fullchain.pem
+           nsb_ssl_certificate_key_file: /var/ssl/certs/mydomain.com/privatekey.pem
+        nsb_server_additional_conf: |
+          # Enable proxy cache.
+          proxy_cache general_cache;
+
+          # Add header to report cache misses and hits.
+          add_header X-Proxy-Cache $upstream_cache_status;
+        nsb_locations:
+          - match: "/"
+            body: "try_files $uri @proxy;"
+          - match: "@proxy"
+            body: |
+              limit_req zone=flood_protection burst=50 nodelay;
+              proxy_pass http://web_backend;
+              proxy_set_header  Host $host;
+              proxy_set_header  X-Real-IP $remote_addr;
+              proxy_set_header  X-Forwarded-For $proxy_add_x_forwarded_for;
+              proxy_set_header  X-Forwarded-By    $server_addr:$server_port;
+              proxy_set_header  X-Local-Proxy     $scheme;
+              proxy_set_header  X-Forwarded-Proto $scheme;
+
+              proxy_pass_header Set-Cookie;
+              proxy_pass_header Cookie;
+              proxy_pass_header X-Accel-Expires;
+              proxy_pass_header X-Accel-Redirect;
+              proxy_pass_header X-This-Proto;
+
 
 
 License
