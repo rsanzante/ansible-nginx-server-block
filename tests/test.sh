@@ -146,6 +146,11 @@ function prepare_docker_container() {
     --volume="$PWD/tests/test_sites":/var/tvhosts:ro \
     --name $container_id $1 bash
 
+  # Set ANSIBLE_FORCE_COLOR instead of using `--tty`
+  # See https://www.jeffgeerling.com/blog/2017/fix-ansible-hanging-when-used-docker-and-tty
+  docker exec [container] env ANSIBLE_FORCE_COLOR=1 ansible-playbook /path/to/playbook.yml
+
+
   log_notice 1 "Installing Nginx server from system packages"
 
   log_notice 2 "Updating apt cache"
@@ -224,9 +229,6 @@ function test_site_is_up() {
 
 # Script body
 #############
-# Set ANSIBLE_FORCE_COLOR instead of using `--tty`
-# See https://www.jeffgeerling.com/blog/2017/fix-ansible-hanging-when-used-docker-and-tty
-docker exec [container] env ANSIBLE_FORCE_COLOR=1 ansible-playbook /path/to/playbook.yml
 
 # Initial flags
 VERBOSE_LEVEL=0
