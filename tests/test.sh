@@ -1,8 +1,5 @@
 #!/bin/bash
 
-cat /etc/hosts
-
-ping mydomain.com -c1
 
 set -e
 set -x
@@ -177,7 +174,7 @@ function perform_tests() {
 
   log_notice 1 "Deploying test site code."
   $simcom docker exec $container_id sudo mkdir /var/vhosts/
-  $simcom docker exec $container_id sudo ln -s /var/tvhosts/site1 /var/vhosts/mydomain.com
+  $simcom docker exec $container_id sudo ln -s /var/tvhosts/site1 /var/vhosts/$TEST_DOMAIN
 
   log_notice 0 "Runing ansible role"
   # Set ANSIBLE_FORCE_COLOR instead of using `--tty`
@@ -190,7 +187,7 @@ function perform_tests() {
 
   test_nginx_is_running
 
-  test_site_is_up "http://mydomain.com" "This is the test site number 1."
+  test_site_is_up "http://$TEST_DOMAIN" "This is the test site number 1."
 }
 
 # Tests role doesn't change anything on second run.
@@ -240,6 +237,12 @@ VERBOSE_LEVEL=0
 DRY_MODE=0
 REUSE_CONTAINER=0
 KEEP_CONTAINER=0
+TEST_DOMAIN="mydomain.test"
+
+cat /etc/hosts
+
+ping $TEST_DOMAIN -c1
+
 
 # Get script name.
 SCRIPT_NAME=`basename "$0"`

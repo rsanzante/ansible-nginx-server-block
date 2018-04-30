@@ -13,7 +13,7 @@ env:
 
 addons:
   hosts:
-    - mydomain.com
+    - mydomain.test
 
 script:
 
