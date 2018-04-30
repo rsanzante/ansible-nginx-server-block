@@ -1,9 +1,19 @@
 ---
+
+# Loosely based on geerlingguy's way to test ansible roles.
+# See https://www.jeffgeerling.com/blog/2018/how-i-test-ansible-configuration-on-7-different-oses-docker.
+
 services: docker
+
+env:
+  - distro: debian9
+  - distro: debian8
+  - distro: ubuntu16.04
+  - distro: ubuntu14.04
 
 script:
 
-  - export docker_image="williamyeh/ansible:debian8"
+  - export docker_image="williamyeh/ansible:$distro"
 
   - export container_id=$(date +%s)
 
