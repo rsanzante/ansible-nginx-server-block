@@ -152,7 +152,7 @@ function prepare_docker_container() {
   $simcom docker exec $container_id sudo apt-get update
 
   log_notice 2 "Installing Nginx using apt"
-  $simcom docker exec $container_id sudo apt-get install nginx-full -y
+  $simcom docker exec $container_id sudo apt-get install nginx-full curl -y
 
   log_notice 2 "Adding container IP to /etc/hosts"
   container_ip=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $container_id)
