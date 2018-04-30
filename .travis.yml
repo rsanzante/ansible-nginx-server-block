@@ -13,7 +13,7 @@ env:
 
 script:
 
-  - tests/test.sh $distro
+  - tests/test.sh ${distro}
 
 notifications:
   webhooks: https://galaxy.ansible.com/api/v1/notifications/
