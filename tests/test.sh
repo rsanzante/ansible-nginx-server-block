@@ -1,5 +1,9 @@
 #!/bin/bash
 
+cat /etc/hosts
+
+ping mydomain.com -c1
+
 set -e
 set -x
 # Functions
@@ -100,9 +104,11 @@ function add_domain_to_etc_hosts() {
   then
     echo "$container_ip $1" | sudo tee -a /etc/hosts > /dev/null
   else
+    cat /etc/hosts
     $simcom echo "$container_ip $1" \| sudo tee -a /etc/hosts  \> /dev/null
+
   fi
-  add_lines_to_etc_hosts=$((add_lines_to_etc_hosts+1))
+  #add_lines_to_etc_hosts=$((add_lines_to_etc_hosts+1))
 }
 
 # Remove all added domains to local machine /etc/hosts.
@@ -156,7 +162,7 @@ function prepare_docker_container() {
 
   log_notice 2 "Adding container IP to /etc/hosts"
   container_ip=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $container_id)
-  add_domain_to_etc_hosts "mydomain.org"
+  #add_domain_to_etc_hosts "mydomain.org"
 }
 
 # Delete created docker container.
@@ -294,6 +300,6 @@ fi
 
 if [ $KEEP_CONTAINER -eq 0 ]; then remove_docker_container; fi
 
-remove_added_lines_to_etc_hosts
+#remove_added_lines_to_etc_hosts
 
 log_notice 0 "\n${boldon}${greenf}All tests passed!${reset}\n"
