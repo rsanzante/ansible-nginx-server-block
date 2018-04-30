@@ -217,6 +217,8 @@ function test_site_is_up() {
 
   log_test "Test site '$1' is up."
 
+  curl "$1"
+
   curl -s "$1" | grep -q "$2" \
     && test_rc=0 \
     || test_rc=1
