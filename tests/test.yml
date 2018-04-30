@@ -12,5 +12,4 @@
       nsb_locations:
         - match: "/"
           body: |
-            root   /var/www/html;
-            index  index.html index.htm;
+            index  index.html;
