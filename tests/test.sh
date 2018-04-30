@@ -156,7 +156,7 @@ function prepare_docker_container() {
 
   log_notice 2 "Adding container IP to /etc/hosts"
   container_ip=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $container_id)
-  add_domain_to_etc_hosts $container_ip "mydomain.org"
+  add_domain_to_etc_hosts "mydomain.org"
 }
 
 # Delete created docker container.
