@@ -6,14 +6,14 @@
 services: docker
 
 env:
-#  - distro: debian9
-  - distro: debian8
-#  - distro: ubuntu16.04
-  - distro: ubuntu14.04
+#  - distro_name: debian9
+  - distro_name: debian8
+#  - distro_name: ubuntu16.04
+  - distro_name: ubuntu14.04
 
 script:
 
-  - tests/test.sh ${distro}
+  - tests/test.sh -vvv
 
 notifications:
   webhooks: https://galaxy.ansible.com/api/v1/notifications/
