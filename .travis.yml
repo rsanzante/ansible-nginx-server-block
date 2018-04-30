@@ -6,9 +6,9 @@
 services: docker
 
 env:
-  - distro: debian9
+#  - distro: debian9
   - distro: debian8
-  - distro: ubuntu16.04
+#  - distro: ubuntu16.04
   - distro: ubuntu14.04
 
 script:
