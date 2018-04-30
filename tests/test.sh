@@ -146,11 +146,6 @@ function prepare_docker_container() {
     --volume="$PWD/tests/test_sites":/var/tvhosts:ro \
     --name $container_id $1 bash
 
-  # Set ANSIBLE_FORCE_COLOR instead of using `--tty`
-  # See https://www.jeffgeerling.com/blog/2017/fix-ansible-hanging-when-used-docker-and-tty
-  docker exec $container_id env ANSIBLE_FORCE_COLOR=1 ansible-playbook /path/to/playbook.yml
-
-
   log_notice 1 "Installing Nginx server from system packages"
 
   log_notice 2 "Updating apt cache"
@@ -179,7 +174,9 @@ function perform_tests() {
   $simcom docker exec $container_id sudo ln -s /var/tvhosts/site1 /var/vhosts/mydomain.com
 
   log_notice 0 "Runing ansible role"
-  $simcom docker exec $container_id env TERM=xterm ansible-playbook /etc/ansible/roles/metadrop.nginx_server_block/tests/test.yml
+  # Set ANSIBLE_FORCE_COLOR instead of using `--tty`
+  # See https://www.jeffgeerling.com/blog/2017/fix-ansible-hanging-when-used-docker-and-tty
+  $simcom docker exec $container_id env ANSIBLE_FORCE_COLOR=1 ansible-playbook /etc/ansible/roles/metadrop.nginx_server_block/tests/test.yml
 
   log_header "Starting tests"
 
@@ -194,7 +191,7 @@ function perform_tests() {
 function test_role_idempotence() {
   log_test "Test role idempotence."
 
-  docker exec $container_id env TERM=xterm ansible-playbook /etc/ansible/roles/metadrop.nginx_server_block/tests/test.yml | \
+  docker exec $container_id env ANSIBLE_FORCE_COLOR=1 ansible-playbook /etc/ansible/roles/metadrop.nginx_server_block/tests/test.yml | \
     grep -q 'changed=0.*failed=0' \
     && test_rc=0 \
     || test_rc=1
