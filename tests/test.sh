@@ -148,7 +148,7 @@ function prepare_docker_container() {
 
   # Set ANSIBLE_FORCE_COLOR instead of using `--tty`
   # See https://www.jeffgeerling.com/blog/2017/fix-ansible-hanging-when-used-docker-and-tty
-  docker exec [container] env ANSIBLE_FORCE_COLOR=1 ansible-playbook /path/to/playbook.yml
+  docker exec $container_id env ANSIBLE_FORCE_COLOR=1 ansible-playbook /path/to/playbook.yml
 
 
   log_notice 1 "Installing Nginx server from system packages"
