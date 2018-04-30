@@ -272,7 +272,8 @@ Simplest block server with just one simple location.
     - hosts: servers
       roles:
          - role: metadrop.nginx_server_block
-           nsb_domains: "mydomain.com"
+           nsb_domains:
+             - mydomain.com
            nsb_docroot_path: "/var/vhosts/mydomain.com"
            nsb_https_enabled: no
            nsb_locations:
@@ -287,7 +288,9 @@ Block server with more options, SSL and restriction applied.
     - hosts: servers
       roles:
          - role: metadrop.nginx_server_block
-           nsb_domains: "mydomain.com www.mydomain.com"
+           nsb_domains:
+             - mydomain.com
+             - www.mydomain.com
            nsb_docroot_path: "/var/vhosts/mydomain.com"
            nsb_https_enabled: yes
            nsb_ssl_certificate_file: /var/ssl/certs/mydomain.com/fullchain.pem
@@ -314,7 +317,8 @@ Block server with a simple redirction to another domain.
     - hosts: servers
       roles:
          - role: metadrop.nginx_server_block
-           nsb_domains: "my-old-domain.com"
+           nsb_domains:
+             - my-old-domain.com
            nsb_server_additional_conf: "return 301 https://my-new-domain.com$request_uri;"
            nsb_force_https: no
 
@@ -325,7 +329,9 @@ defined in the Nginx config elsewhere.
     - hosts: servers
       roles:
          - role: metadrop.nginx_server_block
-           nsb_domains: "mydomain.com www.mydomain.com"
+           nsb_domains:
+             - mydomain.com
+             - www.mydomain.com
            nsb_docroot_path: "/var/vhosts/mydomain.com"
            nsb_https_enabled: yes
            nsb_ssl_certificate_file: /var/ssl/certs/mydomain.com/fullchain.pem
