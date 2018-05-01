@@ -139,6 +139,54 @@ function remove_added_lines_to_etc_hosts() {
   fi
 }
 
+function discover_test_suites() {
+
+  suites_path=$(ls -d $TEST_SUITES_DIR/*)
+
+  echo "$suites_path"
+
+  for suite_path in $suites_path
+  do
+    run_suite "$suite_path"
+  done
+
+}
+
+function run_suite () {
+
+  source "$1/test.sh"
+
+  echo "Suite:  $suite_name"
+
+   # Initialize docker image.
+   if [ $REUSE_CONTAINER -eq 0 ]; then initialize_docker_image $distro_name; fi
+
+   # Prepare container.
+   if [ $REUSE_CONTAINER -eq 0 ]; then prepare_docker_container $docker_image; fi
+
+
+   if [ $DRY_MODE -eq 1 ]
+   then
+     log_notice 0 "Not performing test because dry mode is enabled."
+   else
+     perform_tests
+   fi
+#
+#   if [ $KEEP_CONTAINER -eq 0 ]
+#   then
+#     remove_docker_container
+#   else
+#     log_msg 0 "Keeping container as instructed. Container id: $container_id"
+#   fi
+#
+#   remove_added_lines_to_etc_hosts
+
+  log_notice 0 "\n${boldon}${greenf}All tests passed!${reset}\n"
+
+
+}
+
+
 # Prepares docker image from a distro name.
 #
 # $1: Distro name.
@@ -260,12 +308,13 @@ function test_site_is_up() {
 # Script body
 #############
 
-# Initial flags
+# Config variables.
 VERBOSE_LEVEL=0
 DRY_MODE=0
 REUSE_CONTAINER=0
 KEEP_CONTAINER=0
 TEST_DOMAIN="mydomain.test"
+TEST_SUITES_DIR="tests/suites"
 
 
 # Get script name.
@@ -323,6 +372,7 @@ log_msg 1 "Log level: $VERBOSE_LEVEL\n"
 log_msg 1 "Using distro '$distro_name'\n"
 log_msg 1 "Pacakges to install: '$packages'\n"
 
+discover_test_suites
 
 # Initialize docker image.
 if [ $REUSE_CONTAINER -eq 0 ]; then initialize_docker_image $distro_name; fi
