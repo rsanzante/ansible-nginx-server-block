@@ -83,9 +83,16 @@ function log_notice() {
 
 # Displays a not executed command (becasue of dry mode on).
 # $* Command that hasn't been executed
-function log_cmd() {
+function log_cmd_dm() {
   log_msg 0 "${cyanf}${italicson}(commnad that would be run)${reset} ${*}\n"
 }
+
+# Displays a command that is going to be executed.
+# $* Command to be executed.
+function log_cmd() {
+  log_msg 3 "${cyanf}${italicson}${*}${reset}\n"
+}
+
 
 # Displays a test name.
 # $1 Test name to display.
@@ -162,9 +169,11 @@ function prepare_docker_container() {
   log_notice 1 "Installing Nginx server from system packages"
 
   log_notice 2 "Updating apt cache"
+  log_cmd "docker exec $container_id apt-get update"
   $simcom docker exec $container_id apt-get update
 
   log_notice 2 "Installing Nginx using apt"
+  log_cmd "docker exec $container_id apt-get install $packages  -y"
   $simcom docker exec $container_id apt-get install $packages  -y
 
   log_notice 2 "Adding container IP to /etc/hosts"
@@ -219,7 +228,7 @@ function test_nginx_is_running() {
   # Docker image seems to have an inconsistent init system state.
   # See https://stackoverflow.com/a/47609033/907592
   # Force Nginx start here as role doesn't need to deal with this bug.
-  $simcom docker exec $container_id service nginx start > /dev/null
+  $simcom docker exec $container_id service nginx start >&6
 
   docker exec ${container_id} ps -ax | grep -q 'nginx' \
     && test_rc=0 \
@@ -234,7 +243,10 @@ function test_nginx_is_running() {
 function test_site_is_up() {
   log_test "Test site '$1' is up."
 
-  curl -s "$1" | grep -q "$2" \
+  output=$(curl -s "$1")
+  echo "$output" >&6
+
+  echo "$output" | grep -q "$2" \
     && test_rc=0 \
     || test_rc=1
 
@@ -258,6 +270,9 @@ SCRIPT_NAME=`basename "$0"`
 # Initialize vars.
 add_lines_to_etc_hosts=0
 
+# Initialize additional output handle.
+exec 6>/dev/null
+
 initializeANSI
 
 # Parse options.
@@ -277,7 +292,7 @@ while true ; do
     -c|--container-id) container_id=$2; REUSE_CONTAINER=1 ; shift 2 ;;
     -p|--packages) packages=$2; shift 2 ;;
     -k|--keep-container) KEEP_CONTAINER=1; shift ;;
-    -n|--dry-mode) simcom="log_cmd"; DRY_MODE=1; shift ;;
+    -n|--dry-mode) simcom="log_cmd_dm"; DRY_MODE=1; shift ;;
     -h|--help) usage ; exit -1;;
     --) shift ; break ;;
     *) echo "Internal error!" ; exit -1 ;;
@@ -290,6 +305,10 @@ distro_name=${distro_name:-""}
 # Check mandatory params
 if [ -z "$distro_name" ]; then err "Distro name not provided."; fi
 if [ -z "$packages" ]; then err "Distro needed packages not provided."; fi
+
+# If verbose level is greater than 1 show output of certain commands.
+# See https://serverfault.com/a/414845/324348
+if [ $VERBOSE_LEVEL -ge 2 ]; then exec 6>&1; fi
 
 # Report dry mode.
 if [ $DRY_MODE -eq 1 ]; then log_notice 0 "Using simulate mode, not commands are executed."; fi
