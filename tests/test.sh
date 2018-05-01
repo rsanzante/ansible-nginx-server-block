@@ -216,7 +216,7 @@ function prepare_docker_container() {
     --volume="$PWD/tests/sites":/var/tvhosts:ro \
     --name $container_id $1 bash
 
-  set_docker_exec_command
+  post_prepare_docker_container
 
   log_notice 1 "Installing Nginx server from system packages"
 
