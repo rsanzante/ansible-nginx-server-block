@@ -273,13 +273,12 @@ Simplest block server with just one simple location.
       roles:
          - role: metadrop.nginx_server_block
            nsb_domains:
-             - mydomain.com
-           nsb_docroot_path: "/var/vhosts/mydomain.com"
+             - example.com
+           nsb_docroot_path: "/var/vhosts/example.com"
            nsb_https_enabled: no
            nsb_locations:
              - match: "/"
                body: |
-                 root   /var/www/html;
                  index  index.html index.htm;
 
 
@@ -289,12 +288,12 @@ Block server with more options, SSL and restriction applied.
       roles:
          - role: metadrop.nginx_server_block
            nsb_domains:
-             - mydomain.com
-             - www.mydomain.com
-           nsb_docroot_path: "/var/vhosts/mydomain.com"
+             - example.com
+             - www.example.com
+           nsb_docroot_path: "/var/vhosts/example.com"
            nsb_https_enabled: yes
-           nsb_ssl_certificate_file: /var/ssl/certs/mydomain.com/fullchain.pem
-           nsb_ssl_certificate_key_file: /var/ssl/certs/mydomain.com/privatekey.pem
+           nsb_ssl_certificate_file: /var/ssl/certs/example.com/fullchain.pem
+           nsb_ssl_certificate_key_file: /var/ssl/certs/example.com/privatekey.pem
            nsb_restriction:
              satisfy: yes
              deny_allow_list:
@@ -304,7 +303,7 @@ Block server with more options, SSL and restriction applied.
                - deny all
              basic_auth_enabled: yes
              basic_auth_name: 'Restricted area'
-             basic_auth_passwd_filepath: '/etc/htpasswd/mydomain.com/htpasswd'
+             basic_auth_passwd_filepath: '/etc/htpasswd/example.com/htpasswd'
            nsb_locations:
              - match: "/"
                body: |
@@ -318,8 +317,8 @@ Block server with a simple redirction to another domain.
       roles:
          - role: metadrop.nginx_server_block
            nsb_domains:
-             - my-old-domain.com
-           nsb_server_additional_conf: "return 301 https://my-new-domain.com$request_uri;"
+             - example-old.com
+           nsb_server_additional_conf: "return 301 https://example-new.com$request_uri;"
            nsb_force_https: no
 
 
@@ -330,12 +329,12 @@ defined in the Nginx config elsewhere.
       roles:
          - role: metadrop.nginx_server_block
            nsb_domains:
-             - mydomain.com
-             - www.mydomain.com
-           nsb_docroot_path: "/var/vhosts/mydomain.com"
+             - example.com
+             - www.example.com
+           nsb_docroot_path: "/var/vhosts/example.com"
            nsb_https_enabled: yes
-           nsb_ssl_certificate_file: /var/ssl/certs/mydomain.com/fullchain.pem
-           nsb_ssl_certificate_key_file: /var/ssl/certs/mydomain.com/privatekey.pem
+           nsb_ssl_certificate_file: /var/ssl/certs/example.com/fullchain.pem
+           nsb_ssl_certificate_key_file: /var/ssl/certs/example.com/privatekey.pem
         nsb_server_additional_conf: |
           # Enable proxy cache.
           proxy_cache general_cache;
