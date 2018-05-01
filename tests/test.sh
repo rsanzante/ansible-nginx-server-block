@@ -302,8 +302,9 @@ while true ; do
   esac
 done
 
-# Allow to set distro from env variable.
+# Allow to set varaibles from env variables.
 distro_name=${distro_name:-""}
+packages=${packages:-""}
 
 # Check mandatory params
 if [ -z "$distro_name" ]; then err "Distro name not provided."; fi
