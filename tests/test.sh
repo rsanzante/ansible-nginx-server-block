@@ -7,9 +7,21 @@ set -e
 
 function usage() {
   echo "
+
+Launch test for this role.
+
 Usage:
 
-  $SCRIPT_NAME
+  $SCRIPT_NAME [OPTIONS]
+
+  Options:
+    -v|--verbose: Increase verbose level. Use as many times as you want.
+    -d|--distro: Distro name to use. Can be set also with a \$distro_name env variable.
+    -c|--container-id: Do not setup a container, use the container with the container id provided.
+    -p|--packages: Packages to install begore performing tests. Can be set also with a \$packages env variable.
+    -k|--keep-container: Do not destroy container when tests ends.
+    -n|--dry-mode: Do not make any operations, just show what would be done.
+    -h|--help: Show this help message.
 "
 }
 
