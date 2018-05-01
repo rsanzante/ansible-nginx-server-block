@@ -72,6 +72,12 @@ function log_header() {
   log_msg 0 "\n${ulon}${boldon}${greenf}${1}${reset}\n"
 }
 
+# Displays a test suite header.
+# $1 Test suite name.
+function log_suite_header() {
+  log_msg 0 "\n${boldon}${yellowf}${1}${reset}\n"
+}
+
 # Displays a log notice.
 # $1 Notice to display.
 function log_notice() {
@@ -139,6 +145,10 @@ function remove_added_lines_to_etc_hosts() {
   fi
 }
 
+function set_docker_exec_command() {
+  docker_exec="$simcom docker exec $container_id"
+}
+
 function discover_test_suites() {
 
   suites_path=$(ls -d $TEST_SUITES_DIR/*)
@@ -154,23 +164,27 @@ function discover_test_suites() {
 
 function run_suite () {
 
+  # Load test configuration.
   source "$suite_path/test.sh"
 
-  echo "Suite:  $suite_name"
+  log_suite_header "Suite: $suite_name"
 
-   # Initialize docker image.
-   if [ $REUSE_CONTAINER -eq 0 ]; then initialize_docker_image $distro_name; fi
+  # Prepare container.
+  if [ $REUSE_CONTAINER -eq 0 ]
+  then
+    prepare_docker_container $docker_image
+  else
+    # If it's already prepared then set docker exec commands. It's set during
+    # container preparation, but given that setp is skipped do it here.
+    set_docker_exec_command
+  fi
 
-   # Prepare container.
-   if [ $REUSE_CONTAINER -eq 0 ]; then prepare_docker_container $docker_image; fi
-
-
-   if [ $DRY_MODE -eq 1 ]
-   then
-     log_notice 0 "Not performing test because dry mode is enabled."
-   else
-     perform_tests
-   fi
+  if [ $DRY_MODE -eq 1 ]
+  then
+    log_notice 0 "Not performing test because dry mode is enabled."
+  else
+    perform_tests
+  fi
 
   if [ $KEEP_CONTAINER -eq 0 ]
   then
@@ -183,9 +197,7 @@ function run_suite () {
 
   log_notice 0 "\n${boldon}${greenf}All tests passed!${reset}\n"
 
-
 }
-
 
 # Prepares docker image from a distro name.
 #
@@ -198,7 +210,7 @@ function initialize_docker_image() {
   $simcom docker pull $docker_image
 }
 
-# Runs a contanier from current image and prepare it for tests.
+# Runs a container from current image and prepare it for tests.
 # $1 Docker image to use.
 # Set var:
 #  container_id: Id of created container.
@@ -212,10 +224,11 @@ function prepare_docker_container() {
   $simcom docker run --detach -it \
     -p 127.0.0.1:80:80 \
     --volume="$PWD":/etc/ansible/roles/metadrop.nginx_server_block:rw \
+    --volume="$PWD/tests/conf":/etc/testconf:ro \
     --volume="$PWD/tests/sites":/var/tvhosts:ro \
     --name $container_id $1 bash
 
-  docker_exec="$simcom docker exec $container_id"
+  set_docker_exec_command
 
   log_notice 1 "Installing Nginx server from system packages"
 
@@ -230,6 +243,10 @@ function prepare_docker_container() {
   log_notice 2 "Adding container IP to /etc/hosts"
   container_ip=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $container_id)
   add_domain_to_etc_hosts $TEST_DOMAIN
+
+  log_notice 2 "Create directory for vhosts"
+  $docker_exec mkdir /var/vhosts/
+
 }
 
 # Delete created docker container.
@@ -240,9 +257,7 @@ function remove_docker_container() {
 
 function perform_tests() {
 
-  log_header "Preparing tests"
-  # Create directory for vhosts.
-  $docker_exec mkdir /var/vhosts/
+  log_header "Preparing suite"
   prepare_suite
 
   log_notice 0 "Runing ansible role"
@@ -367,5 +382,8 @@ if [ $DRY_MODE -eq 1 ]; then log_notice 0 "Using simulate mode, not commands are
 log_msg 1 "Log level: $VERBOSE_LEVEL\n"
 log_msg 1 "Using distro '$distro_name'\n"
 log_msg 1 "Pacakges to install: '$packages'\n"
+
+# Initialize docker image.
+if [ $REUSE_CONTAINER -eq 0 ]; then initialize_docker_image $distro_name; fi
 
 discover_test_suites

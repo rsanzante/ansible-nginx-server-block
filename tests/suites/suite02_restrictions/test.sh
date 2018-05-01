@@ -1,6 +1,6 @@
 #!/bin/bash
 
-suite_name="Simple site"
+suite_name="Restrictions"
 
 function prepare_suite() {
   log_notice 1 "Deploying test site code."

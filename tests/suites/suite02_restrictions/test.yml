@@ -1,0 +1,20 @@
+---
+
+- hosts: localhost
+  remote_user: root
+  connection: local
+  roles:
+    - role: metadrop.nginx_server_block
+      nsb_domains:
+        - example.test
+      nsb_docroot_path: "/var/vhosts/example.test"
+      nsb_https_enabled: no
+      nsb_restriction:
+        basic_auth_enabled: yes
+        basic_auth_name: 'Restricted area'
+        basic_auth_passwd_filepath: '/etc/testconf/htpasswd_file'
+      nsb_locations:
+        - match: "/"
+          body: |
+            root   /var/www/html;
+            index  index.html index.htm;
