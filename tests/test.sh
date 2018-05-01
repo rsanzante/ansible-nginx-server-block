@@ -321,7 +321,7 @@ if [ $DRY_MODE -eq 1 ]; then log_notice 0 "Using simulate mode, not commands are
 
 log_msg 1 "Log level: $VERBOSE_LEVEL\n"
 log_msg 1 "Using distro '$distro_name'\n"
-log_msg 1 "Pacakges to install: '$pacakges'\n"
+log_msg 1 "Pacakges to install: '$packages'\n"
 
 
 # Initialize docker image.
