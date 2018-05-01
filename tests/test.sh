@@ -261,6 +261,7 @@ function perform_tests() {
   log_notice 0 "Runing ansible role"
   # Set ANSIBLE_FORCE_COLOR instead of using `--tty`
   # See https://www.jeffgeerling.com/blog/2017/fix-ansible-hanging-when-used-docker-and-tty
+  log_cmd "$docker_exec env ANSIBLE_FORCE_COLOR=1 ansible-playbook /etc/ansible/roles/metadrop.nginx_server_block/$suite_path/test.yml"
   $docker_exec env ANSIBLE_FORCE_COLOR=1 ansible-playbook /etc/ansible/roles/metadrop.nginx_server_block/$suite_path/test.yml
 
   log_header "Starting tests"
