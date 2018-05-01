@@ -145,10 +145,6 @@ function remove_added_lines_to_etc_hosts() {
   fi
 }
 
-function set_docker_exec_command() {
-  docker_exec="$simcom docker exec $container_id"
-}
-
 function discover_test_suites() {
 
   suites_path=$(ls -d $TEST_SUITES_DIR/*)
@@ -168,14 +164,8 @@ function run_suite () {
   log_suite_header "Suite: $suite_name"
 
   # Prepare container.
-  if [ $REUSE_CONTAINER -eq 0 ]
-  then
-    prepare_docker_container $docker_image
-  else
-    # If it's already prepared then set docker exec commands. It's set during
-    # container preparation, but given that setp is skipped do it here.
-    set_docker_exec_command
-  fi
+  if [ $REUSE_CONTAINER -eq 0 ]; then prepare_docker_container $docker_image; fi
+  post_prepare_docker_container
 
   if [ $DRY_MODE -eq 1 ]
   then
@@ -238,13 +228,22 @@ function prepare_docker_container() {
   log_cmd "$docker_exec apt-get install $packages  -y"
   $docker_exec apt-get install $packages  -y
 
-  log_notice 2 "Adding container IP to /etc/hosts"
-  container_ip=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $container_id)
-  add_domain_to_etc_hosts $TEST_DOMAIN
-
   log_notice 2 "Create directory for vhosts"
   $docker_exec mkdir /var/vhosts/
 
+  # /sbin/initctl is a fake script. Remove it or Ansible will happily use it to
+  # manage services.
+  # See https://stackoverflow.com/a/47609033/907592
+  log_notice 3 "Remove fake /sbin/initctl"
+  $docker_exec mv /sbin/initctl /sbin/initctl.fake
+
+}
+
+function post_prepare_docker_container() {
+  docker_exec="$simcom docker exec $container_id"
+
+  log_notice 2 "Obtaining container IP"
+  container_ip=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $container_id)
 }
 
 # Delete created docker container.
@@ -284,11 +283,6 @@ function test_role_idempotence() {
 function test_nginx_is_running() {
   log_test "Test Nginx server is running."
 
-  # Docker image seems to have an inconsistent init system state.
-  # See https://stackoverflow.com/a/47609033/907592
-  # Force Nginx start here as role doesn't need to deal with this bug.
-  $docker_exec service nginx start >&6
-
   output=$(docker exec ${container_id} ps -ax)
   echo "$output" >&6
 
@@ -299,13 +293,14 @@ function test_nginx_is_running() {
   process_test_result $test_rc
 }
 
-# Test a given domain is up.
+# Test a given domain returns a given string.
 # $1 Domain to test.
-# $2 String to match in site HTML to consider site up.
-function test_site_is_up() {
-  log_test "Test site '$1' is up."
-
-  output=$(curl -s "$1")
+# $2 String to match in site HTML.
+# $3 Additional curl params
+function test_site_text() {
+  curl_params=${3:-""}
+  log_cmd curl -s "$1" $curl_params
+  output=$(curl -s "$1" $curl_params)
   echo "$output" >&6
 
   echo "$output" | grep -q "$2" \
@@ -313,6 +308,30 @@ function test_site_is_up() {
     || test_rc=1
 
   process_test_result $test_rc
+}
+# Test a given domain is up.
+# $1 Domain to test.
+# $2 String to match in site HTML to consider site up.
+function test_site_is_up() {
+  log_test "Test site '$1' is up."
+  test_site_text "$1" "$2"
+}
+
+# Test a given domain is Basic Auth protected.
+# $1 Domain to test.
+function test_site_is_protected() {
+  log_test "Test site '$1' is protected by Basic Auth."
+  test_site_text "$1" "401 Authorization Required"
+}
+
+# Test a given domain returns a given string using Authorization header.
+# $1 Domain to test.
+# $2 String to match in site HTML.
+# $3 User
+# $4 Pass
+function test_site_is_up_with_credentials() {
+  log_test "Test site '$1' can be reached using Basic Auth credentials."
+  test_site_text "$1" "$2" "--user $3:$4"
 }
 
 # Script body
@@ -323,7 +342,6 @@ VERBOSE_LEVEL=0
 DRY_MODE=0
 REUSE_CONTAINER=0
 KEEP_CONTAINER=0
-TEST_DOMAIN="mydomain.test"
 TEST_SUITES_DIR="tests/suites"
 
 
