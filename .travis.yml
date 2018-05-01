@@ -6,43 +6,14 @@
 services: docker
 
 env:
-#  - distro: debian9
-  - distro: debian8
-#  - distro: ubuntu16.04
-  - distro: ubuntu14.04
+#  - distro_name: debian9
+  - distro_name: debian8
+#  - distro_name: ubuntu16.04
+  - distro_name: ubuntu14.04
 
 script:
 
-  - export docker_image="williamyeh/ansible:$distro"
-
-  - export container_id=$(date +%s)
-
-  - docker pull $docker_image
-
-  - docker run --detach -it --volume="$PWD":/etc/ansible/roles/metadrop.nginx_server_block:rw --name $container_id $opts $docker_image bash
-
-  # Update package list.
-  - docker exec $container_id sudo apt-get update
-
-  # Install nginx.
-  - docker exec $container_id sudo apt-get install nginx-full -y
-
-
-  - docker exec $container_id env TERM=xterm ansible-playbook /etc/ansible/roles/metadrop.nginx_server_block/tests/test.yml
-
-
-
-
-  # Make sure Nginx is running.
-  - >
-    docker exec ${container_id} ps -ax | grep -q 'nginx'
-    && (echo 'Nginx is running: pass' && exit 0)
-    || (echo 'Nginx is running: fail' && exit 1)
-
-
-  - docker rm -f $container_id
-
-
+  - tests/test.sh -vvv
 
 notifications:
   webhooks: https://galaxy.ansible.com/api/v1/notifications/
