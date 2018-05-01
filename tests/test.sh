@@ -164,7 +164,7 @@ function prepare_docker_container() {
   $simcom docker run --detach -it \
     -p 127.0.0.1:80:80 \
     --volume="$PWD":/etc/ansible/roles/metadrop.nginx_server_block:rw \
-    --volume="$PWD/tests/test_sites":/var/tvhosts:ro \
+    --volume="$PWD/tests/sites":/var/tvhosts:ro \
     --name $container_id $1 bash
 
   log_notice 1 "Installing Nginx server from system packages"
