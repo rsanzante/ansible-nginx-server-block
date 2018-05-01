@@ -321,9 +321,10 @@ log_msg 1 "Log level: $VERBOSE_LEVEL\n"
 log_msg 1 "Using distro '$distro_name'\n"
 
 
+# Initialize docker image.
 if [ $REUSE_CONTAINER -eq 0 ]; then initialize_docker_image $distro_name; fi
 
-
+# Prepare container.
 if [ $REUSE_CONTAINER -eq 0 ]; then prepare_docker_container $docker_image; fi
 
 
