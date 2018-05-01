@@ -153,7 +153,7 @@ function prepare_docker_container() {
   $simcom docker exec $container_id sudo apt-get update
 
   log_notice 2 "Installing Nginx using apt"
-  $simcom docker exec $container_id sudo apt-get install nginx-full curl -y
+  $simcom docker exec $container_id apt-get install $packages  -y
 
   log_notice 2 "Adding container IP to /etc/hosts"
   container_ip=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $container_id)
@@ -244,7 +244,7 @@ add_lines_to_etc_hosts=0
 initializeANSI
 
 # Parse options.
-OPTS=`getopt -o hvd:nc:k --long verbose,distro,help,dry-mode,container-id,keep-container  -n "$SCRIPT_NAME" -- "$@"`
+OPTS=`getopt -o hvd:nc:kp: --long verbose,distro,help,dry-mode,container-id,keep-container,packages  -n "$SCRIPT_NAME" -- "$@"`
 if [ $? != 0 ]
 then
   echo "Failed parsing options." >&2
@@ -256,8 +256,9 @@ eval set -- "$OPTS"
 while true ; do
   case "$1" in
     -v|--verbose) VERBOSE_LEVEL=$((VERBOSE_LEVEL+1)); shift ;;
-    -d|--distro) distro_name=$2 ; shift 2 ;;
+    -d|--distro) distro_name=$2; shift 2 ;;
     -c|--container-id) container_id=$2; REUSE_CONTAINER=1 ; shift 2 ;;
+    -p|--packages) packages=$2; shift 2 ;;
     -k|--keep-container) KEEP_CONTAINER=1; shift ;;
     -n|--dry-mode) simcom="log_cmd"; DRY_MODE=1; shift ;;
     -h|--help) usage ; exit -1;;
@@ -270,10 +271,11 @@ done
 distro_name=${distro_name:-""}
 
 # Check mandatory params
-if [ -z $distro_name ]; then err "Distro name not provided."; fi
+if [ -z "$distro_name" ]; then err "Distro name not provided."; fi
+if [ -z "$packages" ]; then err "Distro needed packages not provided."; fi
 
+# Report dry mode.
 if [ $DRY_MODE -eq 1 ]; then log_notice 0 "Using simulate mode, not commands are executed."; fi
-
 
 log_msg 1 "Log level: $VERBOSE_LEVEL\n"
 log_msg 1 "Using distro '$distro_name'\n"
