@@ -1,15 +1,28 @@
 #!/bin/bash
 
 set -e
+set -u
 
 # Functions
 ###########
 
 function usage() {
   echo "
+
+Launch test for this role.
+
 Usage:
 
-  $SCRIPT_NAME
+  $SCRIPT_NAME [OPTIONS]
+
+  Options:
+    -v|--verbose: Increase verbose level. Use as many times as you want.
+    -d|--distro: Distro name to use. Can be set also with a \$distro_name env variable.
+    -c|--container-id: Do not setup a container, use the container with the container id provided.
+    -p|--packages: Packages to install before performing tests. Can be set also with a \$packages env variable.
+    -k|--keep-container: Do not destroy container when tests ends.
+    -n|--dry-mode: Do not make any operations, just show what would be done.
+    -h|--help: Show this help message.
 "
 }
 
@@ -71,9 +84,16 @@ function log_notice() {
 
 # Displays a not executed command (becasue of dry mode on).
 # $* Command that hasn't been executed
-function log_cmd() {
+function log_cmd_dm() {
   log_msg 0 "${cyanf}${italicson}(commnad that would be run)${reset} ${*}\n"
 }
+
+# Displays a command that is going to be executed.
+# $* Command to be executed.
+function log_cmd() {
+  log_msg 3 "${cyanf}${italicson}${*}${reset}\n"
+}
+
 
 # Displays a test name.
 # $1 Test name to display.
@@ -150,10 +170,12 @@ function prepare_docker_container() {
   log_notice 1 "Installing Nginx server from system packages"
 
   log_notice 2 "Updating apt cache"
-  $simcom docker exec $container_id sudo apt-get update
+  log_cmd "docker exec $container_id apt-get update"
+  $simcom docker exec $container_id apt-get update
 
   log_notice 2 "Installing Nginx using apt"
-  $simcom docker exec $container_id sudo apt-get install nginx-full curl -y
+  log_cmd "docker exec $container_id apt-get install $packages  -y"
+  $simcom docker exec $container_id apt-get install $packages  -y
 
   log_notice 2 "Adding container IP to /etc/hosts"
   container_ip=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $container_id)
@@ -171,8 +193,8 @@ function perform_tests() {
   log_header "Preparing tests"
 
   log_notice 1 "Deploying test site code."
-  $simcom docker exec $container_id sudo mkdir /var/vhosts/
-  $simcom docker exec $container_id sudo ln -s /var/tvhosts/site1 /var/vhosts/$TEST_DOMAIN
+  $simcom docker exec $container_id mkdir /var/vhosts/
+  $simcom docker exec $container_id ln -s /var/tvhosts/site1 /var/vhosts/$TEST_DOMAIN
 
   log_notice 0 "Runing ansible role"
   # Set ANSIBLE_FORCE_COLOR instead of using `--tty`
@@ -204,7 +226,15 @@ function test_role_idempotence() {
 function test_nginx_is_running() {
   log_test "Test Nginx server is running."
 
-  docker exec ${container_id} ps -ax | grep -q 'nginx' \
+  # Docker image seems to have an inconsistent init system state.
+  # See https://stackoverflow.com/a/47609033/907592
+  # Force Nginx start here as role doesn't need to deal with this bug.
+  $simcom docker exec $container_id service nginx start >&6
+
+  output=$(docker exec ${container_id} ps -ax)
+  echo "$output" >&6
+
+  echo "$output" | grep -q 'nginx' \
     && test_rc=0 \
     || test_rc=1
 
@@ -217,7 +247,10 @@ function test_nginx_is_running() {
 function test_site_is_up() {
   log_test "Test site '$1' is up."
 
-  curl -s "$1" | grep -q "$2" \
+  output=$(curl -s "$1")
+  echo "$output" >&6
+
+  echo "$output" | grep -q "$2" \
     && test_rc=0 \
     || test_rc=1
 
@@ -240,11 +273,15 @@ SCRIPT_NAME=`basename "$0"`
 
 # Initialize vars.
 add_lines_to_etc_hosts=0
+simcom=""
+
+# Initialize additional output handle.
+exec 6>/dev/null
 
 initializeANSI
 
 # Parse options.
-OPTS=`getopt -o hvd:nc:k --long verbose,distro,help,dry-mode,container-id,keep-container  -n "$SCRIPT_NAME" -- "$@"`
+OPTS=`getopt -o hvd:nc:kp: --long verbose,distro,help,dry-mode,container-id,keep-container,packages  -n "$SCRIPT_NAME" -- "$@"`
 if [ $? != 0 ]
 then
   echo "Failed parsing options." >&2
@@ -256,32 +293,41 @@ eval set -- "$OPTS"
 while true ; do
   case "$1" in
     -v|--verbose) VERBOSE_LEVEL=$((VERBOSE_LEVEL+1)); shift ;;
-    -d|--distro) distro_name=$2 ; shift 2 ;;
+    -d|--distro) distro_name=$2; shift 2 ;;
     -c|--container-id) container_id=$2; REUSE_CONTAINER=1 ; shift 2 ;;
+    -p|--packages) packages=$2; shift 2 ;;
     -k|--keep-container) KEEP_CONTAINER=1; shift ;;
-    -n|--dry-mode) simcom="log_cmd"; DRY_MODE=1; shift ;;
+    -n|--dry-mode) simcom="log_cmd_dm"; DRY_MODE=1; shift ;;
     -h|--help) usage ; exit -1;;
     --) shift ; break ;;
     *) echo "Internal error!" ; exit -1 ;;
   esac
 done
 
-# Allow to set distro from env variable.
+# Allow to set varaibles from env variables.
 distro_name=${distro_name:-""}
+packages=${packages:-""}
 
 # Check mandatory params
-if [ -z $distro_name ]; then err "Distro name not provided."; fi
+if [ -z "$distro_name" ]; then err "Distro name not provided."; fi
+if [ -z "$packages" ]; then err "Distro needed packages not provided."; fi
 
+# If verbose level is greater than 1 show output of certain commands.
+# See https://serverfault.com/a/414845/324348
+if [ $VERBOSE_LEVEL -ge 2 ]; then exec 6>&1; fi
+
+# Report dry mode.
 if [ $DRY_MODE -eq 1 ]; then log_notice 0 "Using simulate mode, not commands are executed."; fi
-
 
 log_msg 1 "Log level: $VERBOSE_LEVEL\n"
 log_msg 1 "Using distro '$distro_name'\n"
+log_msg 1 "Pacakges to install: '$packages'\n"
 
 
+# Initialize docker image.
 if [ $REUSE_CONTAINER -eq 0 ]; then initialize_docker_image $distro_name; fi
 
-
+# Prepare container.
 if [ $REUSE_CONTAINER -eq 0 ]; then prepare_docker_container $docker_image; fi
 
 
@@ -292,7 +338,12 @@ else
   perform_tests
 fi
 
-if [ $KEEP_CONTAINER -eq 0 ]; then remove_docker_container; fi
+if [ $KEEP_CONTAINER -eq 0 ]
+then
+  remove_docker_container
+else
+  log_msg 0 "Keeping container as instructed. Container id: $container_id"
+fi
 
 remove_added_lines_to_etc_hosts
 

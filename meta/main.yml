@@ -15,8 +15,10 @@ galaxy_info:
       versions:
       - stretch
       - jessie
-      - squeeze
-      - wheezy
+    - name: Ubuntu
+      versions:
+      - trusty
+      - xenial
 
   galaxy_tags: [web, nginx, proxy, ssl, webserver, http, http2, https ]
 

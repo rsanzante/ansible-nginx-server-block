@@ -6,10 +6,15 @@
 services: docker
 
 env:
-#  - distro_name: debian9
+  - distro_name: debian9
+    packages: "'nginx-full procps'"
   - distro_name: debian8
-#  - distro_name: ubuntu16.04
+    packages: nginx-full
+  - distro_name: ubuntu16.04
+    packages: nginx-full
   - distro_name: ubuntu14.04
+    packages: nginx-full
+
 
 script:
 
