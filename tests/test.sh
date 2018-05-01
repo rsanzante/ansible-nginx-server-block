@@ -174,7 +174,7 @@ function prepare_docker_container() {
 
   log_notice 2 "Installing Nginx using apt"
   log_cmd "docker exec $container_id apt-get install $packages  -y"
-  $simcom docker exec $container_id apt-get install $packages  -y
+  $simcom docker exec $container_id apt-get install "$packages"  -y
 
   log_notice 2 "Adding container IP to /etc/hosts"
   container_ip=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $container_id)
@@ -319,6 +319,7 @@ if [ $DRY_MODE -eq 1 ]; then log_notice 0 "Using simulate mode, not commands are
 
 log_msg 1 "Log level: $VERBOSE_LEVEL\n"
 log_msg 1 "Using distro '$distro_name'\n"
+log_msg 1 "Pacakges to install: '$pacakges'\n"
 
 
 # Initialize docker image.
