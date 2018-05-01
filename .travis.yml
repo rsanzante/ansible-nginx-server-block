@@ -11,10 +11,6 @@ env:
 #  - distro_name: ubuntu16.04
   - distro_name: ubuntu14.04
 
-addons:
-  hosts:
-    - mydomain.test
-
 script:
 
   - tests/test.sh -vvv
