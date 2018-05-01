@@ -162,7 +162,7 @@ function prepare_docker_container() {
   log_notice 1 "Installing Nginx server from system packages"
 
   log_notice 2 "Updating apt cache"
-  $simcom docker exec $container_id sudo apt-get update
+  $simcom docker exec $container_id apt-get update
 
   log_notice 2 "Installing Nginx using apt"
   $simcom docker exec $container_id apt-get install $packages  -y
@@ -183,8 +183,8 @@ function perform_tests() {
   log_header "Preparing tests"
 
   log_notice 1 "Deploying test site code."
-  $simcom docker exec $container_id sudo mkdir /var/vhosts/
-  $simcom docker exec $container_id sudo ln -s /var/tvhosts/site1 /var/vhosts/$TEST_DOMAIN
+  $simcom docker exec $container_id mkdir /var/vhosts/
+  $simcom docker exec $container_id ln -s /var/tvhosts/site1 /var/vhosts/$TEST_DOMAIN
 
   log_notice 0 "Runing ansible role"
   # Set ANSIBLE_FORCE_COLOR instead of using `--tty`
