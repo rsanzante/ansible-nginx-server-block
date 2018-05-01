@@ -147,14 +147,14 @@ function discover_test_suites() {
 
   for suite_path in $suites_path
   do
-    run_suite "$suite_path"
+    run_suite
   done
 
 }
 
 function run_suite () {
 
-  source "$1/test.sh"
+  source "$suite_path/test.sh"
 
   echo "Suite:  $suite_name"
 
@@ -171,15 +171,15 @@ function run_suite () {
    else
      perform_tests
    fi
-#
-#   if [ $KEEP_CONTAINER -eq 0 ]
-#   then
-#     remove_docker_container
-#   else
-#     log_msg 0 "Keeping container as instructed. Container id: $container_id"
-#   fi
-#
-#   remove_added_lines_to_etc_hosts
+
+  if [ $KEEP_CONTAINER -eq 0 ]
+  then
+    remove_docker_container
+  else
+    log_msg 0 "Keeping container as instructed. Container id: $container_id"
+  fi
+
+  remove_added_lines_to_etc_hosts
 
   log_notice 0 "\n${boldon}${greenf}All tests passed!${reset}\n"
 
@@ -241,30 +241,24 @@ function remove_docker_container() {
 function perform_tests() {
 
   log_header "Preparing tests"
-
-  log_notice 1 "Deploying test site code."
+  # Create directory for vhosts.
   $docker_exec mkdir /var/vhosts/
-  $docker_exec ln -s /var/tvhosts/site1 /var/vhosts/$TEST_DOMAIN
+  prepare_suite
 
   log_notice 0 "Runing ansible role"
   # Set ANSIBLE_FORCE_COLOR instead of using `--tty`
   # See https://www.jeffgeerling.com/blog/2017/fix-ansible-hanging-when-used-docker-and-tty
-  $docker_exec env ANSIBLE_FORCE_COLOR=1 ansible-playbook /etc/ansible/roles/metadrop.nginx_server_block/tests/test.yml
+  $docker_exec env ANSIBLE_FORCE_COLOR=1 ansible-playbook /etc/ansible/roles/metadrop.nginx_server_block/$suite_path/test.yml
 
   log_header "Starting tests"
-
-  test_role_idempotence
-
-  test_nginx_is_running
-
-  test_site_is_up "http://$TEST_DOMAIN" "This is the test site number 1."
+  execute_suite
 }
 
 # Tests role doesn't change anything on second run.
 function test_role_idempotence() {
   log_test "Test role idempotence."
 
-  $docker_exec env ANSIBLE_FORCE_COLOR=1 ansible-playbook /etc/ansible/roles/metadrop.nginx_server_block/tests/test.yml | \
+  $docker_exec env ANSIBLE_FORCE_COLOR=1 ansible-playbook /etc/ansible/roles/metadrop.nginx_server_block/$suite_path/test.yml | \
     grep -q 'changed=0.*failed=0' \
     && test_rc=0 \
     || test_rc=1
@@ -375,6 +369,3 @@ log_msg 1 "Using distro '$distro_name'\n"
 log_msg 1 "Pacakges to install: '$packages'\n"
 
 discover_test_suites
-
-exit
-
