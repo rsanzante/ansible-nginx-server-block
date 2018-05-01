@@ -230,7 +230,10 @@ function test_nginx_is_running() {
   # Force Nginx start here as role doesn't need to deal with this bug.
   $simcom docker exec $container_id service nginx start >&6
 
-  docker exec ${container_id} ps -ax | grep -q 'nginx' \
+  output=$(docker exec ${container_id} ps -ax)
+  echo "$output" >&6
+
+  echo "$output" | grep -q 'nginx' \
     && test_rc=0 \
     || test_rc=1
 
