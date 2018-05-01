@@ -7,7 +7,7 @@
     - role: metadrop.nginx_server_block
       nsb_domains:
         - mydomain.test
-      nsb_docroot_path: "/var/vhosts/mydomain.com"
+      nsb_docroot_path: "/var/vhosts/mydomain.test"
       nsb_https_enabled: no
       nsb_locations:
         - match: "/"
