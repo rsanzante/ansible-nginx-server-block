@@ -153,8 +153,6 @@ function discover_test_suites() {
 
   suites_path=$(ls -d $TEST_SUITES_DIR/*)
 
-  echo "$suites_path"
-
   for suite_path in $suites_path
   do
     run_suite
