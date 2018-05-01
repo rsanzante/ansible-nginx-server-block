@@ -4,9 +4,9 @@
 This role configures a single site using server blocks (virtual hosts using
 Apache jargon).
 
-Work in progress, alpha quality. Only tested in Debian, but might work in other
-platforms. Only testedwith Ansible 2.4, but it might work with other ansible
-releases.
+Work in progress, alpha quality. Only tested in Debian and Ubuntu, but might
+work in other platforms. Only tested with Ansible 2.4, but it might work with
+other Ansible releases.
 
 A working Nginx should be configured, this role doesn't install it.
 
