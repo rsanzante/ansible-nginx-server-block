@@ -1,8 +1,7 @@
 #!/bin/bash
 
-
 set -e
-set -x
+
 # Functions
 ###########
 
@@ -101,18 +100,9 @@ function add_domain_to_etc_hosts() {
   then
     echo "$container_ip $1" | sudo tee -a /etc/hosts > /dev/null
   else
-    cat /etc/hosts
     $simcom echo "$container_ip $1" \| sudo tee -a /etc/hosts  \> /dev/null
-
   fi
   add_lines_to_etc_hosts=$((add_lines_to_etc_hosts+1))
-
-cat /etc/hosts
-
-ping $TEST_DOMAIN -c1
-
-
-
 }
 
 # Remove all added domains to local machine /etc/hosts.
@@ -225,10 +215,7 @@ function test_nginx_is_running() {
 # $1 Domain to test.
 # $2 String to match in site HTML to consider site up.
 function test_site_is_up() {
-
   log_test "Test site '$1' is up."
-
-  curl "$1"
 
   curl -s "$1" | grep -q "$2" \
     && test_rc=0 \
