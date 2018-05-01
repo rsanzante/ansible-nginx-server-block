@@ -215,15 +215,17 @@ function prepare_docker_container() {
     --volume="$PWD/tests/sites":/var/tvhosts:ro \
     --name $container_id $1 bash
 
+  docker_exec="$simcom docker exec $container_id"
+
   log_notice 1 "Installing Nginx server from system packages"
 
   log_notice 2 "Updating apt cache"
-  log_cmd "docker exec $container_id apt-get update"
-  $simcom docker exec $container_id apt-get update
+  log_cmd "$docker_exec apt-get update"
+  $docker_exec apt-get update
 
   log_notice 2 "Installing Nginx using apt"
-  log_cmd "docker exec $container_id apt-get install $packages  -y"
-  $simcom docker exec $container_id apt-get install $packages  -y
+  log_cmd "$docker_exec apt-get install $packages  -y"
+  $docker_exec apt-get install $packages  -y
 
   log_notice 2 "Adding container IP to /etc/hosts"
   container_ip=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $container_id)
@@ -241,13 +243,13 @@ function perform_tests() {
   log_header "Preparing tests"
 
   log_notice 1 "Deploying test site code."
-  $simcom docker exec $container_id mkdir /var/vhosts/
-  $simcom docker exec $container_id ln -s /var/tvhosts/site1 /var/vhosts/$TEST_DOMAIN
+  $docker_exec mkdir /var/vhosts/
+  $docker_exec ln -s /var/tvhosts/site1 /var/vhosts/$TEST_DOMAIN
 
   log_notice 0 "Runing ansible role"
   # Set ANSIBLE_FORCE_COLOR instead of using `--tty`
   # See https://www.jeffgeerling.com/blog/2017/fix-ansible-hanging-when-used-docker-and-tty
-  $simcom docker exec $container_id env ANSIBLE_FORCE_COLOR=1 ansible-playbook /etc/ansible/roles/metadrop.nginx_server_block/tests/test.yml
+  $docker_exec env ANSIBLE_FORCE_COLOR=1 ansible-playbook /etc/ansible/roles/metadrop.nginx_server_block/tests/test.yml
 
   log_header "Starting tests"
 
@@ -262,7 +264,7 @@ function perform_tests() {
 function test_role_idempotence() {
   log_test "Test role idempotence."
 
-  docker exec $container_id env ANSIBLE_FORCE_COLOR=1 ansible-playbook /etc/ansible/roles/metadrop.nginx_server_block/tests/test.yml | \
+  $docker_exec env ANSIBLE_FORCE_COLOR=1 ansible-playbook /etc/ansible/roles/metadrop.nginx_server_block/tests/test.yml | \
     grep -q 'changed=0.*failed=0' \
     && test_rc=0 \
     || test_rc=1
@@ -277,7 +279,7 @@ function test_nginx_is_running() {
   # Docker image seems to have an inconsistent init system state.
   # See https://stackoverflow.com/a/47609033/907592
   # Force Nginx start here as role doesn't need to deal with this bug.
-  $simcom docker exec $container_id service nginx start >&6
+  $docker_exec service nginx start >&6
 
   output=$(docker exec ${container_id} ps -ax)
   echo "$output" >&6
@@ -374,27 +376,5 @@ log_msg 1 "Pacakges to install: '$packages'\n"
 
 discover_test_suites
 
-# Initialize docker image.
-if [ $REUSE_CONTAINER -eq 0 ]; then initialize_docker_image $distro_name; fi
+exit
 
-# Prepare container.
-if [ $REUSE_CONTAINER -eq 0 ]; then prepare_docker_container $docker_image; fi
-
-
-if [ $DRY_MODE -eq 1 ]
-then
-  log_notice 0 "Not performing test because dry mode is enabled."
-else
-  perform_tests
-fi
-
-if [ $KEEP_CONTAINER -eq 0 ]
-then
-  remove_docker_container
-else
-  log_msg 0 "Keeping container as instructed. Container id: $container_id"
-fi
-
-remove_added_lines_to_etc_hosts
-
-log_notice 0 "\n${boldon}${greenf}All tests passed!${reset}\n"
