@@ -216,6 +216,11 @@ function test_role_idempotence() {
 function test_nginx_is_running() {
   log_test "Test Nginx server is running."
 
+  # Docker image seems to have an inconsistent init system state.
+  # See https://stackoverflow.com/a/47609033/907592
+  # Force Nginx start here as role doesn't need to deal with this bug.
+  $simcom docker exec $container_id service nginx start > /dev/null
+
   docker exec ${container_id} ps -ax | grep -q 'nginx' \
     && test_rc=0 \
     || test_rc=1
@@ -306,7 +311,12 @@ else
   perform_tests
 fi
 
-if [ $KEEP_CONTAINER -eq 0 ]; then remove_docker_container; fi
+if [ $KEEP_CONTAINER -eq 0 ]
+then
+  remove_docker_container
+else
+  log_msg 0 "Keeping container as instructed. Container id: $container_id"
+fi
 
 remove_added_lines_to_etc_hosts
 
