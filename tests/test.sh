@@ -273,6 +273,7 @@ SCRIPT_NAME=`basename "$0"`
 
 # Initialize vars.
 add_lines_to_etc_hosts=0
+simcom=""
 
 # Initialize additional output handle.
 exec 6>/dev/null
