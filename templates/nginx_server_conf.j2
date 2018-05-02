@@ -1,8 +1,12 @@
 #jinja2: lstrip_blocks: "True"
 {# Use a macro to indent included template. See https://stackoverflow.com/a/10997352/907592 #}
 {% macro restrictionMacro(restriction) -%}
+# Location restrictions.
 {% if restriction.satisfy_any is defined and restriction.satisfy_any %}
 satisfy any;
+{% endif %}
+{% if restriction.basic_auth_off is defined and restriction.basic_auth_off %}
+auth_basic off;
 {% endif %}
 {% if restriction.deny_allow_list is defined and restriction.deny_allow_list|length %}
   {% for deny_allow_line in restriction.deny_allow_list %}
@@ -142,6 +146,7 @@ server {
   {{ nsb_server_additional_conf|indent(2, False)}}
   {% endif %}
   {% for location in nsb_locations %}
+
   location {{ location.match }} {
     {% if location.restriction is defined and location.restriction %}
       {% set restriction = location.restriction %}
