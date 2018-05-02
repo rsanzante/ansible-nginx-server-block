@@ -500,5 +500,5 @@ discover_test_suites
 
 discover_test_error_playbooks
 
-log_notice 0 "Everything is awesome!"
+log_notice 0 "\n\nEverything is awesome!"
 
