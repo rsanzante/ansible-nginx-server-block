@@ -129,6 +129,10 @@ function add_domain_to_etc_hosts() {
     $simcom echo "$container_ip $1" \| sudo tee -a /etc/hosts  \> /dev/null
   fi
   add_lines_to_etc_hosts=$((add_lines_to_etc_hosts+1))
+
+  # Add inside container as well.
+  $docker_exec  /bin/bash -c  "echo 127.0.0.1 $1 >> /etc/hosts"
+
 }
 
 # Remove all added domains to local machine /etc/hosts.
