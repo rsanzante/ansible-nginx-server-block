@@ -6,11 +6,7 @@ test_domain="example.test"
 
 function prepare_suite() {
   log_notice 1 "Deploying test site code."
-  $docker_exec test -L /var/vhosts/$test_domain ||
-    $docker_exec ln -s /var/tvhosts/site1 /var/vhosts/$test_domain
-
-  log_notice 1 "Adding container IP to /etc/hosts"
-  add_domain_to_etc_hosts $test_domain
+  prepare_suite  $test_domain site1
 }
 
 function execute_suite() {

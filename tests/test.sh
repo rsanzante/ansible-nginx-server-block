@@ -256,6 +256,16 @@ function remove_docker_container() {
   $simcom docker rm -f $container_id > /dev/null
 }
 
+# Prepares a domain for test creating a symlink to its code and adding it it to
+# /etc/hosts.
+function prepare_domain() {
+  $docker_exec test -L /var/vhosts/$1 ||
+    $docker_exec ln -s /var/tvhosts/$2 /var/vhosts/$1
+
+  log_notice 1 "Adding container IP to /etc/hosts with domain $1"
+  add_domain_to_etc_hosts $1
+}
+
 function perform_tests() {
 
   log_header "Preparing suite"
