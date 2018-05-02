@@ -11,9 +11,9 @@ env:
   - distro_name: debian8
     packages: nginx-full
   - distro_name: ubuntu16.04
-    packages: "nginx-full curl"
+    packages: "'nginx-full curl'"
   - distro_name: ubuntu14.04
-    packages: "nginx-full curl"
+    packages: "'nginx-full curl'"
 
 
 script:
