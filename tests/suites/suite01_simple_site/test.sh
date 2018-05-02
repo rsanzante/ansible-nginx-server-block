@@ -6,7 +6,7 @@ test_domain="example.test"
 
 function prepare_suite() {
   log_notice 1 "Deploying test site code."
-  prepare_suite  $test_domain site1
+  prepare_domain $test_domain site1
 }
 
 function execute_suite() {
