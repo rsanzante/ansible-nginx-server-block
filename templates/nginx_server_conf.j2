@@ -49,12 +49,6 @@ server {
   # SSL certificates.
   ssl_certificate     {{ nsb_ssl_certificate_file }};
   ssl_certificate_key {{ nsb_ssl_certificate_key_file }};
-    {% if nsb_restriction is defined %}
-
-  # Restrictions.
-      {% set restriction = nsb_restriction %}
-{{ restrictionMacro(restriction)|indent( width=2, indentfirst=True) }}
-    {% endif %}
     {% if nsb_force_https %}
 
   # Redirect HTTP traffic to HTTPS. Yes, 'if' is evil, but 'return ...;' is
@@ -73,6 +67,12 @@ server {
     {% endif  %}
   {% endif  %}
 {# TODO: Add Unix socket support #}
+  {% if nsb_restriction is defined %}
+
+  # Restrictions.
+    {% set restriction = nsb_restriction %}
+{{ restrictionMacro(restriction)|indent( width=2, indentfirst=True) }}
+  {% endif %}
   {% if nsb_docroot_path is defined %}
 
   root {{ nsb_docroot_path }};

@@ -72,6 +72,12 @@ function log_header() {
   log_msg 0 "\n${ulon}${boldon}${greenf}${1}${reset}\n"
 }
 
+# Displays a test suite header.
+# $1 Test suite name.
+function log_suite_header() {
+  log_msg 0 "\n${boldon}${yellowf}${1}${reset}\n"
+}
+
 # Displays a log notice.
 # $1 Notice to display.
 function log_notice() {
@@ -123,6 +129,10 @@ function add_domain_to_etc_hosts() {
     $simcom echo "$container_ip $1" \| sudo tee -a /etc/hosts  \> /dev/null
   fi
   add_lines_to_etc_hosts=$((add_lines_to_etc_hosts+1))
+
+  # Add inside container as well.
+  $docker_exec  /bin/bash -c  "echo 127.0.0.1 $1 >> /etc/hosts"
+
 }
 
 # Remove all added domains to local machine /etc/hosts.
@@ -139,6 +149,48 @@ function remove_added_lines_to_etc_hosts() {
   fi
 }
 
+function discover_test_suites() {
+
+  suites_path=$(ls -d $TEST_SUITES_DIR/*)
+
+  for suite_path in $suites_path
+  do
+    run_suite
+  done
+
+}
+
+function run_suite () {
+
+  # Load test configuration.
+  source "$suite_path/test.sh"
+
+  log_suite_header "Suite: $suite_name"
+
+  # Prepare container.
+  if [ $REUSE_CONTAINER -eq 0 ]; then prepare_docker_container $docker_image; fi
+  post_prepare_docker_container
+
+  if [ $DRY_MODE -eq 1 ]
+  then
+    log_notice 0 "Not performing test because dry mode is enabled."
+  else
+    perform_tests
+  fi
+
+  if [ $KEEP_CONTAINER -eq 0 ]
+  then
+    remove_docker_container
+  else
+    log_msg 0 "Keeping container as instructed. Container id: $container_id"
+  fi
+
+  remove_added_lines_to_etc_hosts
+
+  log_notice 0 "\n${boldon}${greenf}All tests passed!${reset}\n"
+
+}
+
 # Prepares docker image from a distro name.
 #
 # $1: Distro name.
@@ -150,7 +202,7 @@ function initialize_docker_image() {
   $simcom docker pull $docker_image
 }
 
-# Runs a contanier from current image and prepare it for tests.
+# Runs a container from current image and prepare it for tests.
 # $1 Docker image to use.
 # Set var:
 #  container_id: Id of created container.
@@ -164,22 +216,38 @@ function prepare_docker_container() {
   $simcom docker run --detach -it \
     -p 127.0.0.1:80:80 \
     --volume="$PWD":/etc/ansible/roles/metadrop.nginx_server_block:rw \
-    --volume="$PWD/tests/test_sites":/var/tvhosts:ro \
+    --volume="$PWD/tests/conf":/etc/testconf:ro \
+    --volume="$PWD/tests/sites":/var/tvhosts:ro \
     --name $container_id $1 bash
+
+  post_prepare_docker_container
 
   log_notice 1 "Installing Nginx server from system packages"
 
   log_notice 2 "Updating apt cache"
-  log_cmd "docker exec $container_id apt-get update"
-  $simcom docker exec $container_id apt-get update
+  log_cmd "$docker_exec apt-get update"
+  $docker_exec apt-get update
 
   log_notice 2 "Installing Nginx using apt"
-  log_cmd "docker exec $container_id apt-get install $packages  -y"
-  $simcom docker exec $container_id apt-get install $packages  -y
+  log_cmd "$docker_exec apt-get install $packages  -y"
+  $docker_exec apt-get install $packages  -y
 
-  log_notice 2 "Adding container IP to /etc/hosts"
+  log_notice 2 "Create directory for vhosts"
+  $docker_exec mkdir /var/vhosts/
+
+  # /sbin/initctl is a fake script. Remove it or Ansible will happily use it to
+  # manage services.
+  # See https://stackoverflow.com/a/47609033/907592
+  log_notice 3 "Remove fake /sbin/initctl"
+  $docker_exec mv /sbin/initctl /sbin/initctl.fake
+
+}
+
+function post_prepare_docker_container() {
+  docker_exec="$simcom docker exec $container_id"
+
+  log_notice 2 "Obtaining container IP"
   container_ip=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $container_id)
-  add_domain_to_etc_hosts $TEST_DOMAIN
 }
 
 # Delete created docker container.
@@ -188,33 +256,36 @@ function remove_docker_container() {
   $simcom docker rm -f $container_id > /dev/null
 }
 
+# Prepares a domain for test creating a symlink to its code and adding it it to
+# /etc/hosts.
+function prepare_domain() {
+  $docker_exec test -L /var/vhosts/$1 ||
+    $docker_exec ln -s /var/tvhosts/$2 /var/vhosts/$1
+
+  log_notice 1 "Adding container IP to /etc/hosts with domain $1"
+  add_domain_to_etc_hosts $1
+}
+
 function perform_tests() {
 
-  log_header "Preparing tests"
-
-  log_notice 1 "Deploying test site code."
-  $simcom docker exec $container_id mkdir /var/vhosts/
-  $simcom docker exec $container_id ln -s /var/tvhosts/site1 /var/vhosts/$TEST_DOMAIN
+  log_header "Preparing suite"
+  prepare_suite
 
   log_notice 0 "Runing ansible role"
   # Set ANSIBLE_FORCE_COLOR instead of using `--tty`
   # See https://www.jeffgeerling.com/blog/2017/fix-ansible-hanging-when-used-docker-and-tty
-  $simcom docker exec $container_id env ANSIBLE_FORCE_COLOR=1 ansible-playbook /etc/ansible/roles/metadrop.nginx_server_block/tests/test.yml
+  log_cmd "$docker_exec env ANSIBLE_FORCE_COLOR=1 ansible-playbook /etc/ansible/roles/metadrop.nginx_server_block/$suite_path/test.yml"
+  $docker_exec env ANSIBLE_FORCE_COLOR=1 ansible-playbook /etc/ansible/roles/metadrop.nginx_server_block/$suite_path/test.yml
 
   log_header "Starting tests"
-
-  test_role_idempotence
-
-  test_nginx_is_running
-
-  test_site_is_up "http://$TEST_DOMAIN" "This is the test site number 1."
+  execute_suite
 }
 
 # Tests role doesn't change anything on second run.
 function test_role_idempotence() {
   log_test "Test role idempotence."
 
-  docker exec $container_id env ANSIBLE_FORCE_COLOR=1 ansible-playbook /etc/ansible/roles/metadrop.nginx_server_block/tests/test.yml | \
+  $docker_exec env ANSIBLE_FORCE_COLOR=1 ansible-playbook /etc/ansible/roles/metadrop.nginx_server_block/$suite_path/test.yml | \
     grep -q 'changed=0.*failed=0' \
     && test_rc=0 \
     || test_rc=1
@@ -226,11 +297,6 @@ function test_role_idempotence() {
 function test_nginx_is_running() {
   log_test "Test Nginx server is running."
 
-  # Docker image seems to have an inconsistent init system state.
-  # See https://stackoverflow.com/a/47609033/907592
-  # Force Nginx start here as role doesn't need to deal with this bug.
-  $simcom docker exec $container_id service nginx start >&6
-
   output=$(docker exec ${container_id} ps -ax)
   echo "$output" >&6
 
@@ -241,13 +307,23 @@ function test_nginx_is_running() {
   process_test_result $test_rc
 }
 
-# Test a given domain is up.
+# Test a given domain returns a given string.
 # $1 Domain to test.
-# $2 String to match in site HTML to consider site up.
-function test_site_is_up() {
-  log_test "Test site '$1' is up."
-
-  output=$(curl -s "$1")
+# $2 String to match in site HTML.
+# $3 Additional curl params
+# $4 Local or remote: 0 test is launched from host, 1 test is launched inside
+# docker contanier, so cnonectin is local. From host by default.
+function test_site_text() {
+  local=${4:-0}
+  if [ $local -eq 0 ]
+  then
+    curl_command="curl"
+  else
+    curl_command="$docker_exec curl"
+  fi
+  curl_params=${3:-""}
+  log_cmd $curl_command -s "$1" $curl_params
+  output=$($curl_command -s "$1" $curl_params)
   echo "$output" >&6
 
   echo "$output" | grep -q "$2" \
@@ -256,16 +332,59 @@ function test_site_is_up() {
 
   process_test_result $test_rc
 }
+# Test a given domain is up.
+# $1 Domain to test.
+# $2 String to match in site HTML to consider site up.
+function test_site_is_up() {
+  log_test "Test site '$1' is up."
+  test_site_text "$1" "$2"
+}
+
+# Test a given domain is Basic Auth protected.
+# $1 Domain to test.
+function test_site_is_protected() {
+  log_test "Test site '$1' is protected by Basic Auth."
+  test_site_text "$1" "401 Authorization Required"
+}
+
+# Test a given domain is Basic Auth protected.
+# $1 Domain to test.
+function test_site_is_forbidden() {
+  log_test "Test site '$1' is forbidden."
+  test_site_text "$1" "403 Forbidden"
+}
+
+# Test a given domain returns a given string using Authorization header.
+# $1 Domain to test.
+# $2 String to match in site HTML.
+# $3 User
+# $4 Pass
+function test_site_is_up_with_credentials() {
+  log_test "Test site '$1' can be reached using Basic Auth credentials."
+  test_site_text "$1" "$2" "--user $3:$4"
+}
+# Test a given domain returns a given string using Authorization header.
+# $1 Domain to test.
+# $2 String to match in site HTML.
+# $3 User
+# $4 Pass
+function test_site_is_up_from_localhost() {
+  log_test "Test site '$1' can be reached using from local connection.."
+  test_site_text "$1" "$2" "" 1
+}
+
+
+
 
 # Script body
 #############
 
-# Initial flags
+# Config variables.
 VERBOSE_LEVEL=0
 DRY_MODE=0
 REUSE_CONTAINER=0
 KEEP_CONTAINER=0
-TEST_DOMAIN="mydomain.test"
+TEST_SUITES_DIR="tests/suites"
 
 
 # Get script name.
@@ -323,28 +442,7 @@ log_msg 1 "Log level: $VERBOSE_LEVEL\n"
 log_msg 1 "Using distro '$distro_name'\n"
 log_msg 1 "Pacakges to install: '$packages'\n"
 
-
 # Initialize docker image.
 if [ $REUSE_CONTAINER -eq 0 ]; then initialize_docker_image $distro_name; fi
 
-# Prepare container.
-if [ $REUSE_CONTAINER -eq 0 ]; then prepare_docker_container $docker_image; fi
-
-
-if [ $DRY_MODE -eq 1 ]
-then
-  log_notice 0 "Not performing test because dry mode is enabled."
-else
-  perform_tests
-fi
-
-if [ $KEEP_CONTAINER -eq 0 ]
-then
-  remove_docker_container
-else
-  log_msg 0 "Keeping container as instructed. Container id: $container_id"
-fi
-
-remove_added_lines_to_etc_hosts
-
-log_notice 0 "\n${boldon}${greenf}All tests passed!${reset}\n"
+discover_test_suites
