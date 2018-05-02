@@ -3,11 +3,31 @@
 - hosts: localhost
   remote_user: root
   connection: local
+
   roles:
+    # Test site. Protected by by or basic auth.
     - role: metadrop.nginx_server_block
       nsb_domains:
-        - example.test
-      nsb_docroot_path: "/var/vhosts/example.test"
+        - restriction-example1.test
+      nsb_docroot_path: "/var/vhosts/restriction-example1.test"
+      nsb_https_enabled: no
+      nsb_restriction:
+        satisfy_any: yes
+        deny_allow_list:
+          - allow 127.0.0.1
+          - deny all
+        basic_auth_enabled: yes
+        basic_auth_name: 'Restricted area'
+        basic_auth_passwd_filepath: '/etc/testconf/htpasswd_file'
+      nsb_locations:
+        - match: "/"
+          body: |
+            index  index.html;
+
+    - role: metadrop.nginx_server_block
+      nsb_domains:
+        - restriction-example2.test
+      nsb_docroot_path: "/var/vhosts/restriction-example2.test"
       nsb_https_enabled: no
       nsb_restriction:
         basic_auth_enabled: yes
@@ -17,4 +37,29 @@
         - match: "/"
           body: |
             index  index.html;
+        - match: "/public/"
+          body: |
+            index  index.html;
+          restriction:
+            basic_auth_off: yes
+
+    - role: metadrop.nginx_server_block
+      nsb_domains:
+        - restriction-example3.test
+      nsb_docroot_path: "/var/vhosts/restriction-example3.test"
+      nsb_https_enabled: no
+      nsb_restriction:
+        deny_allow_list:
+          - allow 127.0.0.1
+          - deny all
+      nsb_locations:
+        - match: "/"
+          body: |
+            index  index.html;
+        - match: "/public/"
+          body: |
+            index  index.html;
+          restriction:
+            deny_allow_list:
+              - allow all
 

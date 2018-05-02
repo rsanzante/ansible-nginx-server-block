@@ -311,10 +311,19 @@ function test_nginx_is_running() {
 # $1 Domain to test.
 # $2 String to match in site HTML.
 # $3 Additional curl params
+# $4 Local or remote: 0 test is launched from host, 1 test is launched inside
+# docker contanier, so cnonectin is local. From host by default.
 function test_site_text() {
+  local=${4:-0}
+  if [ $local -eq 0 ]
+  then
+    curl_command="curl"
+  else
+    curl_command="$docker_exec curl"
+  fi
   curl_params=${3:-""}
-  log_cmd curl -s "$1" $curl_params
-  output=$(curl -s "$1" $curl_params)
+  log_cmd $curl_command -s "$1" $curl_params
+  output=$($curl_command -s "$1" $curl_params)
   echo "$output" >&6
 
   echo "$output" | grep -q "$2" \
@@ -338,6 +347,13 @@ function test_site_is_protected() {
   test_site_text "$1" "401 Authorization Required"
 }
 
+# Test a given domain is Basic Auth protected.
+# $1 Domain to test.
+function test_site_is_forbidden() {
+  log_test "Test site '$1' is forbidden."
+  test_site_text "$1" "403 Forbidden"
+}
+
 # Test a given domain returns a given string using Authorization header.
 # $1 Domain to test.
 # $2 String to match in site HTML.
@@ -347,6 +363,18 @@ function test_site_is_up_with_credentials() {
   log_test "Test site '$1' can be reached using Basic Auth credentials."
   test_site_text "$1" "$2" "--user $3:$4"
 }
+# Test a given domain returns a given string using Authorization header.
+# $1 Domain to test.
+# $2 String to match in site HTML.
+# $3 User
+# $4 Pass
+function test_site_is_up_from_localhost() {
+  log_test "Test site '$1' can be reached using from local connection.."
+  test_site_text "$1" "$2" "" 1
+}
+
+
+
 
 # Script body
 #############
