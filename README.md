@@ -311,7 +311,7 @@ Block server with more options, SSL and restriction applied.
                  index  index.html index.htm;
 
 
-Block server with a simple redirction to another domain.
+Block server with a simple redirection to another domain.
 
     - hosts: servers
       roles:

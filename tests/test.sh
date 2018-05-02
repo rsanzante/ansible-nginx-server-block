@@ -149,15 +149,14 @@ function remove_added_lines_to_etc_hosts() {
   fi
 }
 
+# Detects test suites and launches them.
 function discover_test_suites() {
-
   suites_path=$(ls -d $TEST_SUITES_DIR/*)
 
   for suite_path in $suites_path
   do
     run_suite
   done
-
 }
 
 function run_suite () {
@@ -188,7 +187,58 @@ function run_suite () {
   remove_added_lines_to_etc_hosts
 
   log_notice 0 "\n${boldon}${greenf}All tests passed!${reset}\n"
+}
 
+# Detects test playbooks designed to fail and launches them.
+# Instead of create a new container reuse a new container for all error
+# tests. Just to try new thigs :D.
+function discover_test_error_playbooks() {
+  playbook_paths=$(ls -1 $TEST_ERROR_PLAYBOOKS_DIR/*.yml)
+
+  log_header "Testing playbooks with invalid conf."
+
+  # Prepare container.
+  if [ $REUSE_CONTAINER -eq 0 ]; then prepare_docker_container $docker_image; fi
+  post_prepare_docker_container
+
+  if [ $DRY_MODE -eq 1 ]
+  then
+    log_notice 0 "Not performing test because dry mode is enabled."
+  else
+    for playbook_path in $playbook_paths
+    do
+      run_error_playbook
+    done
+  fi
+
+  if [ $KEEP_CONTAINER -eq 0 ]
+  then
+    remove_docker_container
+  else
+    log_msg 0 "Keeping container as instructed. Container id: $container_id"
+  fi
+
+  remove_added_lines_to_etc_hosts
+}
+
+function run_error_playbook () {
+  # Disable erro trap because command should return error.
+  set +e
+
+  error_playbook_title=$(basename "$playbook_path" .yml)
+
+  log_test "Playbook: $error_playbook_title"
+
+  log_cmd $docker_exec env ANSIBLE_FORCE_COLOR=1 ansible-playbook /etc/ansible/roles/metadrop.nginx_server_block/"$playbook_path"
+  output=$($docker_exec env ANSIBLE_FORCE_COLOR=1 ansible-playbook /etc/ansible/roles/metadrop.nginx_server_block/"$playbook_path")
+  echo "$output" >&6
+
+  echo "$output" | grep -q '.*failed=1' \
+    && test_rc=0 \
+    || test_rc=1
+
+  set -e
+  process_test_result $test_rc
 }
 
 # Prepares docker image from a distro name.
@@ -385,6 +435,7 @@ DRY_MODE=0
 REUSE_CONTAINER=0
 KEEP_CONTAINER=0
 TEST_SUITES_DIR="tests/suites"
+TEST_ERROR_PLAYBOOKS_DIR="tests/error_suites"
 
 
 # Get script name.
@@ -446,3 +497,8 @@ log_msg 1 "Pacakges to install: '$packages'\n"
 if [ $REUSE_CONTAINER -eq 0 ]; then initialize_docker_image $distro_name; fi
 
 discover_test_suites
+
+discover_test_error_playbooks
+
+log_notice 0 "Everything is awesome!"
+

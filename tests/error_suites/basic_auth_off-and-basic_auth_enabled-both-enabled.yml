@@ -1,0 +1,26 @@
+---
+
+# Wrong role because restriction block has both basic_auth_off and
+# basic_auth_enabled enabled.
+
+- hosts: localhost
+  remote_user: root
+  connection: local
+
+  roles:
+    - role: metadrop.nginx_server_block
+      nsb_domains:
+        - example.test
+      nsb_docroot_path: "/var/vhosts/example.test"
+      nsb_https_enabled: no
+      nsb_locations:
+        - match: "/"
+          body: |
+            index  index.html;
+        - match: "/public/"
+          body: |
+            index  index.html;
+          restriction:
+            basic_auth_off: yes
+            basic_auth_enabled: yes
+

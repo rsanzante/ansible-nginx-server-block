@@ -1,0 +1,18 @@
+---
+
+- hosts: localhost
+  remote_user: root
+  connection: local
+
+  roles:
+    - role: metadrop.nginx_server_block
+      nsb_domains:
+        - example.test
+      nsb_docroot_path: "/var/vhosts/example.test"
+      nsb_https_enabled: yes
+      nsb_ssl_certificate_file: /var/ssl/certs/example.com/fullchain.pem
+      nsb_locations:
+        - match: "/"
+          body: |
+            index  index.html;
+
