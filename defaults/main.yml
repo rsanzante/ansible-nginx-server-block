@@ -28,6 +28,9 @@ nsb_nginx_conf_dir: /etc/nginx
 nsb_nginx_sites_available_path: sites-available
 # Relative path from nsb_nginx_conf_dir to sites-enabled directory.
 nsb_nginx_sites_enabled_path: sites-enabled
+#
+# Distro allows to disable sites.
+nsb_distro_allows_disabling_sites: yes
 
 
 # Handy configuration features.
@@ -78,7 +81,7 @@ nsb_server_additional_conf: null
 #
 # Configuration file owner and group.
 nsb_conf_file_owner: root
-nsb_conf_file_group: www-data
+nsb_conf_file_group: root
 
 
 # Net interface variables.

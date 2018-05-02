@@ -59,15 +59,17 @@
 - name: SITE | Deploy server configuration file
   template:
     src: "nginx_server_conf.j2"
-    dest: "{{ nsb_nginx_conf_dir }}/{{ nsb_nginx_sites_available_path }}/{{ nsb_c_main_domain }}"
+    dest: "{{ nsb_nginx_conf_dir }}/{{ nsb_nginx_sites_available_path }}/{{ nsb_c_main_domain }}.conf"
     owner: "{{ nsb_conf_file_owner }}"
     group: "{{ nsb_conf_file_group }}"
     mode: 0640
+  when: nsb_distro_allows_disabling_sites or (nsb_server_block_enabled and not nsb_distro_allows_disabling_sites)
   notify: NSB reload nginx
 
 - name: SITE | Enable/disable server block configuration
   file:
-    src: "{{ nsb_nginx_conf_dir }}/{{ nsb_nginx_sites_available_path }}/{{ nsb_c_main_domain }}"
-    dest: "{{ nsb_nginx_conf_dir }}/{{ nsb_nginx_sites_enabled_path }}/{{ nsb_c_main_domain }}"
+    src: "{{ nsb_nginx_conf_dir }}/{{ nsb_nginx_sites_available_path }}/{{ nsb_c_main_domain }}.conf"
+    dest: "{{ nsb_nginx_conf_dir }}/{{ nsb_nginx_sites_enabled_path }}/{{ nsb_c_main_domain }}.conf"
     state: "{{ nsb_server_block_enabled |ternary('link', 'absent') }}"
+  when: nsb_distro_allows_disabling_sites
   notify: NSB reload nginx

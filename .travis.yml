@@ -7,13 +7,12 @@ services: docker
 
 env:
   - distro_name: debian9
-    packages: "'nginx-full procps'"
   - distro_name: debian8
-    packages: nginx-full
-  - distro_name: ubuntu16.04
-    packages: "'nginx-full curl'"
-  - distro_name: ubuntu14.04
-    packages: "'nginx-full curl'"
+  - distro_name: ubuntu1804
+  - distro_name: ubuntu1604
+  - distro_name: ubuntu1404
+  - distro_name: centos7
+
 
 
 script:
