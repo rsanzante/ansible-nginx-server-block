@@ -11,3 +11,13 @@
 - fail:
     msg: "The domain list es empty. Please provide at least one domain name in the nsb_domains variable."
   when: nsb_domains| length == 0
+
+- fail:
+    msg: "Invalid configuration: basic_auth_off and  basic_auth_enabled can't be both enabled in the same restriction block. Ofending block's match property: '{{ item.match }}'"
+  when:
+    - item.restriction is defined
+    - item.restriction.basic_auth_off is defined
+    - item.restriction.basic_auth_off
+    - item.restriction.basic_auth_enabled is defined
+    - item.restriction.basic_auth_enabled
+  with_items: "{{ nsb_locations }}"
