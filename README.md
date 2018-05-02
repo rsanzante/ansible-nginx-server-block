@@ -66,7 +66,7 @@ Restriction block properties:
 Restriction block example:
 
     restriction:
-      satisfy: yes
+      satisfy_any: yes
       deny_allow_list:
         - deny 192.168.1.2
         - allow 192.168.1.1/24
@@ -295,7 +295,7 @@ Block server with more options, SSL and restriction applied.
            nsb_ssl_certificate_file: /var/ssl/certs/example.com/fullchain.pem
            nsb_ssl_certificate_key_file: /var/ssl/certs/example.com/privatekey.pem
            nsb_restriction:
-             satisfy: yes
+             satisfy_any: yes
              deny_allow_list:
                - deny 192.168.10.2
                - allow 192.168.10.1/24
