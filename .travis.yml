@@ -18,7 +18,7 @@ env:
 
 script:
 
-  - tests/test.sh -vvv
+  - tests/test.sh
 
 notifications:
   webhooks: https://galaxy.ansible.com/api/v1/notifications/
