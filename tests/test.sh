@@ -19,7 +19,6 @@ Usage:
     -v|--verbose: Increase verbose level. Use as many times as you want.
     -d|--distro: Distro name to use. Can be set also with a \$distro_name env variable.
     -c|--container-id: Do not setup a container, use the container with the container id provided.
-    -p|--packages: Packages to install before performing tests. Can be set also with a \$packages env variable.
     -k|--keep-container: Do not destroy container when tests ends.
     -n|--dry-mode: Do not make any operations, just show what would be done.
     -h|--help: Show this help message.
@@ -45,6 +44,65 @@ initializeANSI()
   blon="${esc}[5m";      bloff="${esc}[25m"
 
   reset="${esc}[0m"
+}
+
+function set_params_per_distro() {
+  # CentOS 7
+  if [ $distro_name = 'centos7' ]; then
+    init="/usr/lib/systemd/systemd"
+    opts="--privileged --volume=/sys/fs/cgroup:/sys/fs/cgroup:ro"
+    pmanager="yum"
+    pre_install_cmd="yum install epel-release -y"
+    packages="nginx"
+    ansible_extra_vars="-e nsb_nginx_sites_available_path=conf.d -e nsb_nginx_sites_enabled_path=conf.d -e nsb_distro_allows_disabling_sites=False"
+  # Ubuntu 18.04
+  elif [ $distro_name = 'ubuntu1804' ]; then
+    init="/lib/systemd/systemd"
+    opts="--privileged --volume=/sys/fs/cgroup:/sys/fs/cgroup:ro"
+    pmanager="apt-get"
+    packages="nginx-full curl"
+  # Ubuntu 16.04
+  elif [ $distro_name = 'ubuntu1604' ]; then
+    init="/lib/systemd/systemd"
+    opts="--privileged --volume=/sys/fs/cgroup:/sys/fs/cgroup:ro"
+    pmanager="apt-get"
+    packages="nginx-full curl"
+  # Ubuntu 14.04
+  elif [ $distro_name = 'ubuntu1404' ]; then
+    init="/sbin/init"
+    opts="--privileged"
+    pmanager="apt-get"
+    packages="nginx-full curl"
+  # Debian 9
+  elif [ $distro_name = 'debian9' ]; then
+    init="/lib/systemd/systemd"
+    opts="--privileged --volume=/sys/fs/cgroup:/sys/fs/cgroup:ro"
+    pmanager="apt-get"
+    packages="nginx-full procps curl"
+  # Debian 8
+  elif [ $distro_name = 'debian8' ]; then
+    init="/lib/systemd/systemd"
+    opts="--privileged --volume=/sys/fs/cgroup:/sys/fs/cgroup:ro"
+    pmanager="apt-get"
+    packages="nginx-full curl"
+  # Fedora 24
+  elif [ $distro_name = 'fedora24' ]; then
+    init="/usr/lib/systemd/systemd"
+    opts="--privileged --volume=/sys/fs/cgroup:/sys/fs/cgroup:ro"
+    pmanager="yum"
+    packages="nginx procps"
+    ansible_extra_vars="-e nsb_nginx_sites_available_path=conf.d -e nsb_nginx_sites_enabled_path=conf.d -e nsb_distro_allows_disabling_sites=False"
+  # Fedora 27
+  elif [ $distro_name = 'fedora27' ]; then
+    init="/usr/lib/systemd/systemd"
+    opts="--privileged --volume=/sys/fs/cgroup:/sys/fs/cgroup:ro"
+    pmanager="yum"
+    packages="nginx procps"
+    ansible_extra_vars="-e nsb_nginx_sites_available_path=conf.d -e nsb_nginx_sites_enabled_path=conf.d -e nsb_distro_allows_disabling_sites=False"
+  else
+    err "Unkown distro name: $distro_name"
+  fi
+
 }
 
 # Logs a message if equal or greater than ucrrent verbose level.
@@ -100,7 +158,6 @@ function log_cmd() {
   log_msg 3 "${cyanf}${italicson}${*}${reset}\n"
 }
 
-
 # Displays a test name.
 # $1 Test name to display.
 function log_test() {
@@ -131,7 +188,7 @@ function add_domain_to_etc_hosts() {
   add_lines_to_etc_hosts=$((add_lines_to_etc_hosts+1))
 
   # Add inside container as well.
-  $docker_exec  /bin/bash -c  "echo 127.0.0.1 $1 >> /etc/hosts"
+  $docker_exec  /bin/sh -c  "echo 127.0.0.1 $1 >> /etc/hosts"
 
 }
 
@@ -229,8 +286,8 @@ function run_error_playbook () {
 
   log_test "Playbook: $error_playbook_title"
 
-  log_cmd $docker_exec env ANSIBLE_FORCE_COLOR=1 ansible-playbook /etc/ansible/roles/metadrop.nginx_server_block/"$playbook_path"
-  output=$($docker_exec env ANSIBLE_FORCE_COLOR=1 ansible-playbook /etc/ansible/roles/metadrop.nginx_server_block/"$playbook_path")
+  log_cmd $docker_exec env ANSIBLE_FORCE_COLOR=1 ansible-playbook /etc/ansible/roles/metadrop.nginx_server_block/"$playbook_path" $ansible_extra_vars
+  output=$($docker_exec env ANSIBLE_FORCE_COLOR=1 ansible-playbook /etc/ansible/roles/metadrop.nginx_server_block/"$playbook_path" $ansible_extra_vars)
   echo "$output" >&6
 
   echo "$output" | grep -q '.*failed=1' \
@@ -247,7 +304,7 @@ function run_error_playbook () {
 # Set var:
 #   docker_image_name: Docker image name to use.
 function initialize_docker_image() {
-  docker_image="williamyeh/ansible:$1"
+  docker_image="geerlingguy/docker-$1-ansible:latest"
   log_header "Initializating docker image $docker_image"
   $simcom docker pull $docker_image
 }
@@ -263,41 +320,41 @@ function prepare_docker_container() {
   log_header "Preparing docker container $container_id"
 
   log_notice 1 "Bring container up"
-  $simcom docker run --detach -it \
-    -p 127.0.0.1:80:80 \
-    --volume="$PWD":/etc/ansible/roles/metadrop.nginx_server_block:rw \
-    --volume="$PWD/tests/conf":/etc/testconf:ro \
-    --volume="$PWD/tests/sites":/var/tvhosts:ro \
-    --name $container_id $1 bash
+  docker run --detach --name $container_id --privileged \
+         --volume="$PWD":/etc/ansible/roles/metadrop.nginx_server_block:rw \
+         --volume="$PWD/tests/conf":/etc/testconf:ro \
+         --volume="$PWD/tests/sites":/var/tvhosts:ro \
+         -p 127.0.0.1:80:80 \
+         $opts \
+         $1 $init
 
   post_prepare_docker_container
 
   log_notice 1 "Installing Nginx server from system packages"
 
-  log_notice 2 "Updating apt cache"
-  log_cmd "$docker_exec apt-get update"
-  $docker_exec apt-get update
+  log_notice 2 "Updating package list"
+  log_cmd "$docker_exec $pmanager update -y"
+  $docker_exec $pmanager update -y
 
-  log_notice 2 "Installing Nginx using apt"
-  log_cmd "$docker_exec apt-get install $packages  -y"
-  $docker_exec apt-get install $packages  -y
+  if [ ! -z "$pre_install_cmd" ]; then $docker_exec $pre_install_cmd; fi
+
+  log_notice 2 "Installing Nginx"
+  log_cmd "$docker_exec $pmanager install $packages -y"
+  $docker_exec $pmanager install $packages -y
 
   log_notice 2 "Create directory for vhosts"
   $docker_exec mkdir /var/vhosts/
-
-  # /sbin/initctl is a fake script. Remove it or Ansible will happily use it to
-  # manage services.
-  # See https://stackoverflow.com/a/47609033/907592
-  log_notice 3 "Remove fake /sbin/initctl"
-  $docker_exec mv /sbin/initctl /sbin/initctl.fake
-
 }
 
+# Based on https://stackoverflow.com/a/20686101/907592
 function post_prepare_docker_container() {
   docker_exec="$simcom docker exec $container_id"
 
   log_notice 2 "Obtaining container IP"
   container_ip=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $container_id)
+
+  # If nothing retrieved try old docker format.
+  if [ -z "$container_ip" ]; then container_ip=$(docker inspect --format '{{ .NetworkSettings.IPAddress }}'  $container_id); fi
 }
 
 # Delete created docker container.
@@ -321,11 +378,17 @@ function perform_tests() {
   log_header "Preparing suite"
   prepare_suite
 
-  log_notice 0 "Runing ansible role"
+  log_notice 0 "Running ansible role"
   # Set ANSIBLE_FORCE_COLOR instead of using `--tty`
   # See https://www.jeffgeerling.com/blog/2017/fix-ansible-hanging-when-used-docker-and-tty
-  log_cmd "$docker_exec env ANSIBLE_FORCE_COLOR=1 ansible-playbook /etc/ansible/roles/metadrop.nginx_server_block/$suite_path/test.yml"
-  $docker_exec env ANSIBLE_FORCE_COLOR=1 ansible-playbook /etc/ansible/roles/metadrop.nginx_server_block/$suite_path/test.yml
+  log_cmd "$docker_exec env ANSIBLE_FORCE_COLOR=1 ansible-playbook /etc/ansible/roles/metadrop.nginx_server_block/$suite_path/test.yml $ansible_extra_vars"
+
+  output=$($docker_exec env ANSIBLE_FORCE_COLOR=1 ansible-playbook /etc/ansible/roles/metadrop.nginx_server_block/$suite_path/test.yml $ansible_extra_vars)
+
+  echo "$output" >&6
+
+  echo $output | grep -q '.*failed=0' \
+    || err "Error running Ansible playbook"
 
   log_header "Starting tests"
   execute_suite
@@ -335,7 +398,7 @@ function perform_tests() {
 function test_role_idempotence() {
   log_test "Test role idempotence."
 
-  $docker_exec env ANSIBLE_FORCE_COLOR=1 ansible-playbook /etc/ansible/roles/metadrop.nginx_server_block/$suite_path/test.yml | \
+  $docker_exec env ANSIBLE_FORCE_COLOR=1 ansible-playbook /etc/ansible/roles/metadrop.nginx_server_block/$suite_path/test.yml $ansible_extra_vars| \
     grep -q 'changed=0.*failed=0' \
     && test_rc=0 \
     || test_rc=1
@@ -444,14 +507,17 @@ SCRIPT_NAME=`basename "$0"`
 # Initialize vars.
 add_lines_to_etc_hosts=0
 simcom=""
+pre_install_cmd=""
+ansible_extra_vars=""
 
 # Initialize additional output handle.
 exec 6>/dev/null
 
 initializeANSI
 
+
 # Parse options.
-OPTS=`getopt -o hvd:nc:kp: --long verbose,distro,help,dry-mode,container-id,keep-container,packages  -n "$SCRIPT_NAME" -- "$@"`
+OPTS=`getopt -o hvd:nc:kp:m: --long verbose,distro,help,dry-mode,container-id,keep-container,packages,pmanager  -n "$SCRIPT_NAME" -- "$@"`
 if [ $? != 0 ]
 then
   echo "Failed parsing options." >&2
@@ -465,7 +531,6 @@ while true ; do
     -v|--verbose) VERBOSE_LEVEL=$((VERBOSE_LEVEL+1)); shift ;;
     -d|--distro) distro_name=$2; shift 2 ;;
     -c|--container-id) container_id=$2; REUSE_CONTAINER=1 ; shift 2 ;;
-    -p|--packages) packages=$2; shift 2 ;;
     -k|--keep-container) KEEP_CONTAINER=1; shift ;;
     -n|--dry-mode) simcom="log_cmd_dm"; DRY_MODE=1; shift ;;
     -h|--help) usage ; exit -1;;
@@ -474,13 +539,13 @@ while true ; do
   esac
 done
 
-# Allow to set varaibles from env variables.
+# Allow to set distro from env variable.
 distro_name=${distro_name:-""}
-packages=${packages:-""}
 
-# Check mandatory params
+# Check mandatory  distro name param.
 if [ -z "$distro_name" ]; then err "Distro name not provided."; fi
-if [ -z "$packages" ]; then err "Distro needed packages not provided."; fi
+
+set_params_per_distro
 
 # If verbose level is greater than 1 show output of certain commands.
 # See https://serverfault.com/a/414845/324348
@@ -488,6 +553,7 @@ if [ $VERBOSE_LEVEL -ge 2 ]; then exec 6>&1; fi
 
 # Report dry mode.
 if [ $DRY_MODE -eq 1 ]; then log_notice 0 "Using simulate mode, not commands are executed."; fi
+
 
 log_msg 1 "Log level: $VERBOSE_LEVEL\n"
 log_msg 1 "Using distro '$distro_name'\n"

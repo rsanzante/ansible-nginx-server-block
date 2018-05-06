@@ -4,9 +4,8 @@
 This role configures a single site using server blocks (virtual hosts using
 Apache jargon).
 
-Work in progress, alpha quality. Only tested in Debian and Ubuntu, but might
-work in other platforms. Only tested with Ansible 2.4, but it might work with
-other Ansible releases.
+Work in progress, alpha quality. Only tested with Ansible 2.4, but it might work
+with other Ansible releases.
 
 A working Nginx should be configured, this role doesn't install it.
 
@@ -21,6 +20,25 @@ A working Nginx should be configured, this role doesn't install it.
   - Simple boolean variables can enable features on site (block .ht*, block
     source code files, block hidden directories, mask forbidden with 404, etc).
 
+
+**Non Debian distros**
+
+By default role is confugured for Debian like distros that use
+sites-available/sites-enabled directories. For other distros, like CentOS, you
+have to set the following variables:
+
+    nsb_nginx_sites_available_path: conf.d
+    nsb_nginx_sites_enabled_path: conf.d
+    nsb_distro_allows_disabling_sites: no
+
+The final configuration depends on your Nginx configuration.
+
+If `nsb_distro_allows_disabling_sites` is yes, role deploys conf file in
+`nsb_nginx_sites_available_path`, and then makes a symlink from
+`nsb_nginx_sites_enabled_path` to conf file.
+
+If `nsb_distro_allows_disabling_sites` is no, role deploys conf file in
+`nsb_nginx_sites_enabled_path`, without making any symlink.
 
 
 **Restriction**
@@ -253,8 +271,7 @@ but report the Nginx configuration to this role.
 - nsb_nginx_conf_dir: /etc/nginx
 - nsb_nginx_sites_available_path: sites-available
 - nsb_nginx_sites_enabled_path: sites-enabled
-
-
+- nsb_distro_allows_disabling_sites: yes
 
 
 Dependencies
