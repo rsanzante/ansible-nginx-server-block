@@ -20,12 +20,12 @@ galaxy_info:
       - trusty
       - xenial
       - bionic
-   - name: Fedora
-     versions:
+    - name: Fedora
+      versions:
       - 24
       - 27
-   - name: EL
-     versions:
+    - name: EL
+      versions:
       - 6
 
 
