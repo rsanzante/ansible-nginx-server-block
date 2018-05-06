@@ -97,6 +97,8 @@ function set_params_per_distro() {
     init="/usr/lib/systemd/systemd"
     opts="--privileged --volume=/sys/fs/cgroup:/sys/fs/cgroup:ro"
     pmanager="yum"
+    packages="nginx procps"
+    ansible_extra_vars="-e nsb_nginx_sites_available_path=conf.d -e nsb_nginx_sites_enabled_path=conf.d -e nsb_distro_allows_disabling_sites=False"
   else
     err "Unkown distro name: $distro_name"
   fi
@@ -352,7 +354,7 @@ function post_prepare_docker_container() {
   container_ip=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $container_id)
 
   # If nothing retrieved try old docker format.
-  if [ -z "$container_ip"]; then container_ip=$(docker inspect --format '{{ .NetworkSettings.IPAddress }}'  $container_id); fi
+  if [ -z "$container_ip" ]; then container_ip=$(docker inspect --format '{{ .NetworkSettings.IPAddress }}'  $container_id); fi
 }
 
 # Delete created docker container.
