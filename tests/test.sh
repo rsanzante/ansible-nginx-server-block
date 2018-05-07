@@ -482,7 +482,7 @@ function test_site_is_up_with_credentials() {
 # $3 User
 # $4 Pass
 function test_site_is_up_from_localhost() {
-  log_test "Test site '$1' can be reached using from local connection.."
+  log_test "Test site '$1' can be reached using local connection."
   test_site_text "$1" "$2" "" 1
 }
 
