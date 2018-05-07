@@ -164,6 +164,11 @@ function log_test() {
   log_msg 0 "\n${yellowf}${*}${reset}\n"
 }
 
+function run_cmd() {
+  log_cmd $*
+  $*
+}
+
 # Displays a test result, and exit with error if test failed.
 # $1 Value returned by test. 0 menas ok, 1 error.
 function process_test_result() {
@@ -286,8 +291,7 @@ function run_error_playbook () {
 
   log_test "Playbook: $error_playbook_title"
 
-  log_cmd $docker_exec env ANSIBLE_FORCE_COLOR=1 ansible-playbook /etc/ansible/roles/metadrop.nginx_server_block/"$playbook_path" $ansible_extra_vars
-  output=$($docker_exec env ANSIBLE_FORCE_COLOR=1 ansible-playbook /etc/ansible/roles/metadrop.nginx_server_block/"$playbook_path" $ansible_extra_vars)
+  output=$(run_cmd $docker_exec env ANSIBLE_FORCE_COLOR=1 ansible-playbook /etc/ansible/roles/metadrop.nginx_server_block/"$playbook_path" $ansible_extra_vars)
   echo "$output" >&6
 
   echo "$output" | grep -q '.*failed=1' \
@@ -333,14 +337,12 @@ function prepare_docker_container() {
   log_notice 1 "Installing Nginx server from system packages"
 
   log_notice 2 "Updating package list"
-  log_cmd "$docker_exec $pmanager update -y"
-  $docker_exec $pmanager update -y
 
-  if [ ! -z "$pre_install_cmd" ]; then $docker_exec $pre_install_cmd; fi
+  run_cmd $docker_exec $pmanager update -y
+  if [ ! -z "$pre_install_cmd" ]; then run_cmd $docker_exec $pre_install_cmd; fi
 
   log_notice 2 "Installing Nginx"
-  log_cmd "$docker_exec $pmanager install $packages -y"
-  $docker_exec $pmanager install $packages -y
+  run_cmd $docker_exec $pmanager install $packages -y
 
   log_notice 2 "Create directory for vhosts"
   $docker_exec mkdir /var/vhosts/
@@ -381,9 +383,7 @@ function perform_tests() {
   log_notice 0 "Running ansible role"
   # Set ANSIBLE_FORCE_COLOR instead of using `--tty`
   # See https://www.jeffgeerling.com/blog/2017/fix-ansible-hanging-when-used-docker-and-tty
-  log_cmd "$docker_exec env ANSIBLE_FORCE_COLOR=1 ansible-playbook /etc/ansible/roles/metadrop.nginx_server_block/$suite_path/test.yml $ansible_extra_vars"
-
-  output=$($docker_exec env ANSIBLE_FORCE_COLOR=1 ansible-playbook /etc/ansible/roles/metadrop.nginx_server_block/$suite_path/test.yml $ansible_extra_vars)
+  output=$(run_cmd $docker_exec env ANSIBLE_FORCE_COLOR=1 ansible-playbook /etc/ansible/roles/metadrop.nginx_server_block/$suite_path/test.yml $ansible_extra_vars)
 
   echo "$output" >&6
 
@@ -435,8 +435,8 @@ function test_site_text() {
     curl_command="$docker_exec curl"
   fi
   curl_params=${3:-""}
-  log_cmd $curl_command -s "$1" $curl_params
-  output=$($curl_command -s "$1" $curl_params)
+
+  output=$(run_cmd $curl_command -s "$1" $curl_params)
   echo "$output" >&6
 
   echo "$output" | grep -q "$2" \
