@@ -2,12 +2,17 @@
 ----------------------------------
 
 This role configures a single site using server blocks (virtual hosts using
-Apache jargon).
+Apache jargon). Can be used
 
-Work in progress, alpha quality. Only tested with Ansible 2.4, but it might work
-with other Ansible releases.
+Work in progress, alpha quality, but usable. Only tested with Ansible 2.4, but
+it might work with other Ansible releases.
 
-A working Nginx should be configured, this role doesn't install it.
+It may work with other distros, just make sure you configure properly, see
+"Non Debian distros" section. In particular, it probably works with Alpine
+Linux, but not tested yet.
+
+A working Nginx should be configured, this role doesn't install it or configure
+the http block level.
 
 **Features**
 
@@ -113,9 +118,10 @@ Or this one: https://galaxy.ansible.com/jdauphant/nginx/
 ------------------------
 
 - nsb_domains: List of domains for this server block. At least one domain must
-  be delvared. The first domain will be considered the main domain for this
+  be present. The first domain will be considered the main domain for this
   server block. Redirected domains will point to this main domain. Also,
-  it's used for generated identifiers and names, like the main configuration file.
+  it's used for generated identifiers and names, like the main configuration
+  file.
 
 #### Mandatory when SSL is enabled
 ----------------------------------
