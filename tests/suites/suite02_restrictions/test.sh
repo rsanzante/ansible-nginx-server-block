@@ -42,10 +42,4 @@ function execute_suite() {
   # Public folder is accesible.
   test_site_is_up "http://$test_domain3/public/" "This is the public folder of test site number 2."
 
-  # Public folder is accesible.
-  test_site_is_up "http://$test_domain3/public/" "This is the public folder of test site number 2."
-
-
-
-
 }
