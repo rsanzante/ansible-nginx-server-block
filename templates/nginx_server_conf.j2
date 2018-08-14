@@ -111,6 +111,7 @@ server {
 
   # Allow "Well-Known URIs" described in RFC 5785.
   location ~* ^/.well-known/ {
+    auth_basic off;
     allow all;
   }
   {% endif %}
