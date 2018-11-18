@@ -238,6 +238,9 @@ function run_suite () {
   if [ $REUSE_CONTAINER -eq 0 ]; then prepare_docker_container $docker_image; fi
   post_prepare_docker_container
 
+  # Log Ansible info.
+  log_ansible_version
+
   if [ $DRY_MODE -eq 1 ]
   then
     log_notice 0 "Not performing test because dry mode is enabled."
@@ -567,9 +570,6 @@ log_msg 1 "Pacakges to install: '$packages'\n"
 
 # Initialize docker image.
 if [ $REUSE_CONTAINER -eq 0 ]; then initialize_docker_image $distro_name; fi
-
-# Show ansible version.
-log_ansible_version
 
 discover_test_suites
 
