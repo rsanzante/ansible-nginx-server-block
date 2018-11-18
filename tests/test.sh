@@ -105,7 +105,7 @@ function set_params_per_distro() {
 
 }
 
-# Logs a message if equal or greater than ucrrent verbose level.
+# Logs a message if equal or greater than current verbose level.
 # $1 Message log level.
 # $2 Message to display.
 function log_msg() {
@@ -137,7 +137,8 @@ function log_suite_header() {
 }
 
 # Displays a log notice.
-# $1 Notice to display.
+# $1 Log level.
+# $2 Notice to display.
 function log_notice() {
   level=$1
   indentation=$(( $level == 0 ? 0 : level-1 ))
@@ -162,6 +163,11 @@ function log_cmd() {
 # $1 Test name to display.
 function log_test() {
   log_msg 0 "\n${yellowf}${*}${reset}\n"
+}
+
+function log_ansible_version() {
+  log_header "Ansible info"
+  $docker_exec ansible --version
 }
 
 function run_cmd() {
@@ -284,7 +290,7 @@ function discover_test_error_playbooks() {
 }
 
 function run_error_playbook () {
-  # Disable erro trap because command should return error.
+  # Disable error trap because command should return error.
   set +e
 
   error_playbook_title=$(basename "$playbook_path" .yml)
@@ -561,6 +567,9 @@ log_msg 1 "Pacakges to install: '$packages'\n"
 
 # Initialize docker image.
 if [ $REUSE_CONTAINER -eq 0 ]; then initialize_docker_image $distro_name; fi
+
+# Show ansible version.
+log_ansible_version
 
 discover_test_suites
 
