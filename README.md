@@ -2,17 +2,17 @@
 ----------------------------------
 
 This role configures a single site using server blocks (virtual hosts using
-Apache jargon). Can be used
+Apache jargon).
 
 Work in progress, alpha quality, but usable. Only tested with Ansible 2.4, but
 it might work with other Ansible releases.
 
-It may work with other distros, just make sure you configure properly, see
+It may work with other distros, just make sure you configure it properly, see
 "Non Debian distros" section. In particular, it probably works with Alpine
 Linux, but not tested yet.
 
 A working Nginx should be configured, this role doesn't install it or configure
-the http block level.
+at the http block level.
 
 **Features**
 
@@ -22,13 +22,13 @@ the http block level.
   - Fine-grained configuration for site.
   - SSL configuration (given cert and key files are available).
   - HTTP2.
-  - Simple boolean variables can enable features on site (block .ht*, block
+  - Predefined location for certain features on site (block .ht*, block
     source code files, block hidden directories, mask forbidden with 404, etc).
 
 
 **Non Debian distros**
 
-By default role is confugured for Debian like distros that use
+By default role is configured for Debian like distros that use
 sites-available/sites-enabled directories. For other distros, like CentOS, you
 have to set the following variables:
 
@@ -44,6 +44,35 @@ If `nsb_distro_allows_disabling_sites` is yes, role deploys conf file in
 
 If `nsb_distro_allows_disabling_sites` is no, role deploys conf file in
 `nsb_nginx_sites_enabled_path`, without making any symlink.
+
+
+**Predefined locations**
+
+This role provides some predefined locations that can be added to server block
+locations. Keep in mind that those locations have certain match rules that can
+interfere with other custom locations. First locations have higher priority.
+See http://nginx.org/en/docs/http/ngx_http_core_module.html#location for more
+info.
+
+- block_hidden_dirs: Blocks any hidden file or directory (those that begins with
+ a period. If nsb_feature_blocked_to_404 is set to yes a 404 is returned instead of a
+  403.
+
+- block_apache_ht_files: Ignores Apache's .ht* files. Used when
+  nsb_feature_ignore_ht_files is enabled. You can add it to nsb_locations if you
+  prefer to control where it's placed.
+  If nsb_feature_blocked_to_404 is set to yes a 404 is returned instead of a
+  403.
+
+- no_favicon_logging: Do not log accesses to favicon.ico. Used when
+  nsb_feature_dont_log_favicon is enabled. You can add it to nsb_locations if you
+  prefer to control where it's placed.
+
+
+- no_robots_txt_logging: Do not log accesses to robots.txt. Used when
+  nsb_feature_dont_log_robots_txt is enabled. You can add it to nsb_locations if you
+  prefer to control where it's placed.
+
 
 
 **Restriction**
@@ -98,6 +127,8 @@ Restriction block example:
       basic_auth_enabled: yes
       basic_auth_name: 'Restricted area'
       basic_auth_passwd_filepath: '/etc/htpasswd/file'
+
+
 
 
 
@@ -213,38 +244,37 @@ Or this one: https://galaxy.ansible.com/jdauphant/nginx/
 #### Variables to enable certain features using location blocks (along with default value)
 ------------------------------------------------------------------------------------------
 
+- nsb_feature_allow_well_known_rfc_5785: yes
+
+  Allows access to files under .well-known as stated in RFC 5785. If https is
+  enforced this makes sure files under .well-known are still available under
+  http.
+
 - nsb_feature_ignore_ht_files: yes
 
-  Add a location to ignore Apache's .ht* files.
-
-- nsb_feature_ht_files_mask_404: yes
-
-  Mask accesses to .ht* files as Paget Not Found 404 error.
+  Block access to Apache's .ht* files. If yes, the predefined location
+  block_apache_ht_files is added on top of custom locations. If you enable this
+  setting you shouldn't use the block_apache_ht_files location directly (don't
+  use in the nsb_locations array).
 
 - nsb_feature_dont_log_favicon: yes
 
-  Do not log accesses to favicon.ico.
+  Do not log accesses to favicon.ico file. If yes, the predefined location
+  nsb_feature_dont_log_favicon is added on top of custom locations. If you enable
+  this setting you shouldn't use the no_favicon_logging location directly (don't
+  use in the nsb_locations array).
 
 - nsb_feature_dont_log_robots_txt: yes
 
-  Do not log accesses to robots.txt.
+  Do not log accesses to robotgs.txt file. If yes, the predefined location
+  nsb_feature_dont_log_robots_txt is added on top of custom locations. If you enable
+  this setting you shouldn't use the no_favicon_logging location directly (don't
+  use in the nsb_locations array).
 
-- nsb_feature_allow_well_known_rfc_5785: yes
+- nsb_feature_blocked_to_404: yes
 
-  Allow access to .well-known directory as stated by RFC 5785.
-
-- nsb_feature_block_hidden_dirs: yes
-
-  Block access to directories that start with a period. This overlaps somewhat
-  with the block Apache's .ht files snippet, but it's not harmful if both are
-  enabled. You may want both enabled if you want to mask accessed .ht files as
-  404.
-
-- nsb_feature_block_php_source_and_related_files: yes
-
-  Block access to many confidential files (based on Drupal's list) like php,
-  sql, composer.json, bak, yml, etc.
-
+  Instead of return a 403 on blocked URLs return a 404. Only valid for
+  block_apache_ht_files and block_hidden_dirs predefined locations.
 
 
 #### More optional/fine configuration variables (along with default value)
@@ -294,55 +324,55 @@ Simplest block server with just one simple location.
 
     - hosts: servers
       roles:
-         - role: metadrop.nginx_server_block
-           nsb_domains:
-             - example.com
-           nsb_docroot_path: "/var/vhosts/example.com"
-           nsb_https_enabled: no
-           nsb_locations:
-             - match: "/"
-               body: |
-                 index  index.html index.htm;
+        - role: metadrop.nginx_server_block
+          nsb_domains:
+            - example.com
+          nsb_docroot_path: "/var/vhosts/example.com"
+          nsb_https_enabled: no
+          nsb_locations:
+            - match: "/"
+              body: |
+                index  index.html index.htm;
 
 
 Block server with more options, SSL and restriction applied.
 
     - hosts: servers
       roles:
-         - role: metadrop.nginx_server_block
-           nsb_domains:
-             - example.com
-             - www.example.com
-           nsb_docroot_path: "/var/vhosts/example.com"
-           nsb_https_enabled: yes
-           nsb_ssl_certificate_file: /var/ssl/certs/example.com/fullchain.pem
-           nsb_ssl_certificate_key_file: /var/ssl/certs/example.com/privatekey.pem
-           nsb_restriction:
-             satisfy_any: yes
-             deny_allow_list:
-               - deny 192.168.10.2
-               - allow 192.168.10.1/24
-               - allow 127.0.0.1
-               - deny all
-             basic_auth_enabled: yes
-             basic_auth_name: 'Restricted area'
-             basic_auth_passwd_filepath: '/etc/htpasswd/example.com/htpasswd'
-           nsb_locations:
-             - match: "/"
-               body: |
-                 root   /var/www/html;
-                 index  index.html index.htm;
+        - role: metadrop.nginx_server_block
+          nsb_domains:
+            - example.com
+            - www.example.com
+          nsb_docroot_path: "/var/vhosts/example.com"
+          nsb_https_enabled: yes
+          nsb_ssl_certificate_file: /var/ssl/certs/example.com/fullchain.pem
+          nsb_ssl_certificate_key_file: /var/ssl/certs/example.com/privatekey.pem
+          nsb_restriction:
+            satisfy_any: yes
+            deny_allow_list:
+              - deny 192.168.10.2
+              - allow 192.168.10.1/24
+              - allow 127.0.0.1
+              - deny all
+            basic_auth_enabled: yes
+            basic_auth_name: 'Restricted area'
+            basic_auth_passwd_filepath: '/etc/htpasswd/example.com/htpasswd'
+          nsb_locations:
+            - match: "/"
+              body: |
+                root   /var/www/html;
+                index  index.html index.htm;
 
 
 Block server with a simple redirection to another domain.
 
     - hosts: servers
       roles:
-         - role: metadrop.nginx_server_block
-           nsb_domains:
-             - example-old.com
-           nsb_server_additional_conf: "return 301 https://example-new.com$request_uri;"
-           nsb_force_https: no
+        - role: metadrop.nginx_server_block
+          nsb_domains:
+            - example-old.com
+          nsb_server_additional_conf: "return 301 https://example-new.com$request_uri;"
+          nsb_force_https: no
 
 
 Block server that acts as a proxy cache. Note that web_backend proxy must be
@@ -350,39 +380,83 @@ defined in the Nginx config elsewhere.
 
     - hosts: servers
       roles:
-         - role: metadrop.nginx_server_block
-           nsb_domains:
-             - example.com
-             - www.example.com
-           nsb_docroot_path: "/var/vhosts/example.com"
-           nsb_https_enabled: yes
-           nsb_ssl_certificate_file: /var/ssl/certs/example.com/fullchain.pem
-           nsb_ssl_certificate_key_file: /var/ssl/certs/example.com/privatekey.pem
-        nsb_server_additional_conf: |
-          # Enable proxy cache.
-          proxy_cache general_cache;
+        - role: metadrop.nginx_server_block
+          nsb_domains:
+            - example.com
+            - www.example.com
+          nsb_docroot_path: "/var/vhosts/example.com"
+          nsb_https_enabled: yes
+          nsb_ssl_certificate_file: /var/ssl/certs/example.com/fullchain.pem
+          nsb_ssl_certificate_key_file: /var/ssl/certs/example.com/privatekey.pem
+          nsb_server_additional_conf: |
+            # Enable proxy cache.
+            proxy_cache general_cache;
 
-          # Add header to report cache misses and hits.
-          add_header X-Proxy-Cache $upstream_cache_status;
-        nsb_locations:
-          - match: "/"
-            body: "try_files $uri @proxy;"
-          - match: "@proxy"
-            body: |
-              limit_req zone=flood_protection burst=50 nodelay;
-              proxy_pass http://web_backend;
-              proxy_set_header  Host $host;
-              proxy_set_header  X-Real-IP $remote_addr;
-              proxy_set_header  X-Forwarded-For $proxy_add_x_forwarded_for;
-              proxy_set_header  X-Forwarded-By    $server_addr:$server_port;
-              proxy_set_header  X-Local-Proxy     $scheme;
-              proxy_set_header  X-Forwarded-Proto $scheme;
+            # Add header to report cache misses and hits.
+            add_header X-Proxy-Cache $upstream_cache_status;
+          nsb_locations:
+            - match: "/"
+              body: "try_files $uri @proxy;"
+            - match: "@proxy"
+              body: |
+                limit_req zone=flood_protection burst=50 nodelay;
+                proxy_pass http://web_backend;
+                proxy_set_header  Host $host;
+                proxy_set_header  X-Real-IP $remote_addr;
+                proxy_set_header  X-Forwarded-For $proxy_add_x_forwarded_for;
+                proxy_set_header  X-Forwarded-By    $server_addr:$server_port;
+                proxy_set_header  X-Local-Proxy     $scheme;
+                proxy_set_header  X-Forwarded-Proto $scheme;
 
-              proxy_pass_header Set-Cookie;
-              proxy_pass_header Cookie;
-              proxy_pass_header X-Accel-Expires;
-              proxy_pass_header X-Accel-Redirect;
-              proxy_pass_header X-This-Proto;
+                proxy_pass_header Set-Cookie;
+                proxy_pass_header Cookie;
+                proxy_pass_header X-Accel-Expires;
+                proxy_pass_header X-Accel-Redirect;
+                proxy_pass_header X-This-Proto;
+
+
+
+Block server with predefined locations and RFC 5785 option enabled.
+
+    - hosts: servers
+      roles:
+        - role: metadrop.nginx_server_block
+          nsb_domains:
+            - example.com
+          nsb_docroot_path: "/var/vhosts/example.com"
+          nsb_https_enabled: yes
+          nsb_ssl_certificate_file: /var/ssl/certs/example.com/fullchain.pem
+          nsb_ssl_certificate_key_file: /var/ssl/certs/example.com/privatekey.pem
+          nsb_feature_allow_well_known_rfc_5785: yes
+          nsb_locations:
+            - predefined: no_favicon_logging
+            - predefined: no_robots_txt_logging
+            - match: "/"
+              body: |
+                index  index.html index.htm;
+
+
+
+Same as previous example but using variables that enable configuration features
+(in this case not logging accesses to robots.txt and favicon.ico.
+
+    - hosts: servers
+      roles:
+        - role: metadrop.nginx_server_block
+          nsb_domains:
+            - example.com
+          nsb_docroot_path: "/var/vhosts/example.com"
+          nsb_https_enabled: yes
+          nsb_ssl_certificate_file: /var/ssl/certs/example.com/fullchain.pem
+          nsb_ssl_certificate_key_file: /var/ssl/certs/example.com/privatekey.pem
+          nsb_feature_allow_well_known_rfc_5785: yes
+        nsb_feature_dont_log_robots_txt: yes
+        nsb_feature_dont_log_favicon: yes
+          nsb_locations:
+            - match: "/"
+              body: |
+                index  index.html index.htm;
+
 
 
 

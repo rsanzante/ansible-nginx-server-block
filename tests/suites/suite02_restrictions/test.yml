@@ -5,7 +5,7 @@
   connection: local
 
   roles:
-    # Test site. Protected by by or basic auth.
+    # Test site. Protected by IP or basic auth.
     - role: metadrop.nginx_server_block
       nsb_domains:
         - restriction-example1.test

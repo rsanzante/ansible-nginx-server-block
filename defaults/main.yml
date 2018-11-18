@@ -36,20 +36,65 @@ nsb_distro_allows_disabling_sites: yes
 # Handy configuration features.
 ###############################
 #
+# Allow acces to .well-known directory as stated by RFC 5785
+nsb_feature_allow_well_known_rfc_5785: yes
 # Add a location to ignore Apache's .ht* files.
 nsb_feature_ignore_ht_files: yes
-# Additionally, mask those access denied error as Page Not Found 404 error.
-nsb_feature_ht_files_mask_404: yes
 # Do not log favicon.
 nsb_feature_dont_log_favicon: yes
 # Do not log robots.txt.
 nsb_feature_dont_log_robots_txt: yes
-# Allow acces to .well-known directory as stated by RFC 5785
-nsb_feature_allow_well_known_rfc_5785: yes
-# Block access to directories that start with a period.
-nsb_feature_block_hidden_dirs: yes
-# Block access to many confindential files (based on Drupal's list).
-nsb_feature_block_php_source_and_related_files: yes
+#
+# Mask access denied error as Page Not Found 404 error on predefined locations.
+nsb_feature_blocked_to_404: yes
+
+######
+nsb_predefined_locations:
+
+  no_favicon_logging:
+    comment: |
+      # Do not log favicon.ico.
+      # Do not log favicon.ico line 2.
+    match: '/favicon.ico'
+    body: |
+      log_not_found off;
+      access_log off;
+
+  no_robots_txt_logging:
+    comment: |
+      # Do not log robots.txt.
+    match: '/robots.txt'
+    body: |
+      log_not_found off;
+      access_log off;
+
+  block_hidden_dirs:
+    comment: |
+      # Block hidden directories (those that begin with a period). This includes
+      # CVS directories and others.
+    match: '~ (^|/)\.'
+    body: |
+      deny all;
+      {% if nsb_feature_blocked_to_404 %}
+      return 404;
+      {% endif %}
+
+  block_apache_ht_files:
+    comment: |
+      # Block Apache's .ht* files.
+    match: '~\.ht'
+    body: |
+      deny all;
+      {% if nsb_feature_blocked_to_404 %}
+      return 404;
+      {% endif %}
+
+  block_sensitive_files:
+    comment: |
+      # Block certain files that may contain confidential information.
+    match: '~* \.(engine|inc|info|install|make|module|profile|test|po|sh|.*sql|theme|twig|tpl(\.php)?|xtmpl|yml)(~|\.sw[op]|\.bak|\.old|\.orig|\.save)?$|^(\.(?!well-known).*|Entries.*|Repository|Root|Tag|Template|composer\.(json|lock))$|^#.*#$|\.php(~|\.sw[op]|\.bak|\.orig|\.save)$|^.*\.php$'
+    body: "deny all;"
+
 
 
 # Logs configuration.
