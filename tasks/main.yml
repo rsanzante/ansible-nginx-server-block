@@ -59,7 +59,7 @@
 - name: PRE | Add predefined locations enabled by configuration.
   set_fact:
     nsb_c_enabled_predefined_locations: "{{ [{'type': item.name }] +  nsb_c_enabled_predefined_locations }}"
-  where: item.enabled
+  when: item.enabled
   loop:
     - { name: 'no_favicon_logging', enabled: nsb_feature_dont_log_favicon }
     - { name: 'no_robots_txt_logging', enabled: nsb_feature_dont_log_robots_txt }
