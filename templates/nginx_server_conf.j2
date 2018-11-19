@@ -87,7 +87,7 @@ server {
     {% endif  %}
   {% endif  %}
 {# TODO: Add Unix socket support #}
-  {% if nsb_restriction is defined and nsb_restriction.basic_auth_enabled is defined and nsb_restriction.basic_auth_enabled %}
+  {% if nsb_restriction is defined %}
 
   # Restrictions.
     {% set restriction = nsb_restriction %}
