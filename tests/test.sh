@@ -402,8 +402,10 @@ function perform_tests() {
   log_msg 2 "Environment configuration"
 
   # DEBUG
+  set +e
   output=$(run_cmd $docker_exec cat /etc/nginx/sites-enabled/restriction-example3.test.conf)
   echo "$output" >&6
+  set -e
 
 
 
