@@ -85,13 +85,6 @@ function set_params_per_distro() {
     opts="--privileged --volume=/sys/fs/cgroup:/sys/fs/cgroup:ro"
     pmanager="apt-get"
     packages="nginx-full curl"
-  # Fedora 24
-  elif [ $distro_name = 'fedora24' ]; then
-    init="/usr/lib/systemd/systemd"
-    opts="--privileged --volume=/sys/fs/cgroup:/sys/fs/cgroup:ro"
-    pmanager="yum"
-    packages="nginx procps"
-    ansible_extra_vars="-e nsb_nginx_sites_available_path=conf.d -e nsb_nginx_sites_enabled_path=conf.d -e nsb_distro_allows_disabling_sites=False"
   # Fedora 27
   elif [ $distro_name = 'fedora27' ]; then
     init="/usr/lib/systemd/systemd"
@@ -99,6 +92,14 @@ function set_params_per_distro() {
     pmanager="yum"
     packages="nginx procps"
     ansible_extra_vars="-e nsb_nginx_sites_available_path=conf.d -e nsb_nginx_sites_enabled_path=conf.d -e nsb_distro_allows_disabling_sites=False"
+  # Fedora 29
+  elif [ $distro_name = 'fedora29' ]; then
+    init="/usr/lib/systemd/systemd"
+    opts="--privileged --volume=/sys/fs/cgroup:/sys/fs/cgroup:ro"
+    pmanager="yum"
+    packages="nginx procps"
+    ansible_extra_vars="-e nsb_nginx_sites_available_path=conf.d -e nsb_nginx_sites_enabled_path=conf.d -e nsb_distro_allows_disabling_sites=False"
+
   else
     err "Unkown distro name: $distro_name"
   fi
