@@ -50,6 +50,7 @@
       nsb_https_enabled: no
       nsb_restriction:
         deny_allow_list:
+          - allow 127.0.0.1
           - deny all
       nsb_locations:
         - match: "/"
