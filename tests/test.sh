@@ -374,7 +374,7 @@ function remove_docker_container() {
   $simcom docker rm -f $container_id > /dev/null
 }
 
-# Prepares a domain for test creating a symlink to its code and adding it it to
+# Prepares a domain for test creating a symlink to its code and adding it to
 # /etc/hosts.
 function prepare_domain() {
   $docker_exec test -L /var/vhosts/$1 ||
@@ -398,6 +398,15 @@ function perform_tests() {
 
   echo $output | grep -q '.*failed=0' \
     || err "Error running Ansible playbook"
+
+  log_msg 2 "Environment configuration"
+
+  # DEBUG
+  output=$(run_cmd $docker_exec ls /etc/nginx/sites-enabled)
+  echo "$output" >&6
+
+
+
 
   log_header "Starting tests"
   execute_suite
