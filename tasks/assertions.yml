@@ -17,7 +17,7 @@
 
 - name: Check basic_auth_off and basic_auth_enabled aren't both enabled in the same restriction block.
   fail:
-    msg: "Invalid configuration: basic_auth_off and  basic_auth_enabled can't be both enabled in the same restriction block. Ofending block's match property: '{{ item.match }}'" # noqa 204
+    msg: "Invalid configuration: basic_auth_off and  basic_auth_enabled can't be both enabled in the same restriction block. Ofending block's match property: '{{ item.match }}'"  # noqa 204
   when:
     - item.restriction is defined
     - item.restriction.basic_auth_off is defined

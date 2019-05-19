@@ -1,3 +1,5 @@
+---
+
 galaxy_info:
   author: Ricardo Sanz
   description: This role configures a single site using server blocks (virtual hosts using Apache jargon).
@@ -13,22 +15,21 @@ galaxy_info:
   platforms:
     - name: Debian
       versions:
-      - stretch
-      - jessie
+        - stretch
+        - jessie
     - name: Ubuntu
       versions:
-      - trusty
-      - xenial
-      - bionic
+        - trusty
+        - xenial
+        - bionic
     - name: Fedora
       versions:
-      - 24
-      - 27
+        - 24
+        - 27
     - name: EL
       versions:
-      - 6
+        - 6
 
-
-  galaxy_tags: [web, nginx, proxy, ssl, webserver, http, http2, https ]
+  galaxy_tags: [web, nginx, proxy, ssl, webserver, http, http2, https]
 
 dependencies: []

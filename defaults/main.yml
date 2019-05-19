@@ -16,7 +16,7 @@ nsb_http_enabled: yes
 nsb_https_enabled: yes
 #
 # By default nolocations are defined.
-nsb_locations : []
+nsb_locations: []
 
 # Nginx general configuration variables.
 ########################################

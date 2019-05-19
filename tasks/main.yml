@@ -53,8 +53,8 @@
 # dictionaries. Are Python dictionaries actually sequences?
 - name: PRE | Build net interface listen configurations
   set_fact:
-    nsb_c_http_net_listen_conf: "{{ ([nsb_c_http_ipv4_listen_conf]  +  [nsb_c_http_ipv6_listen_conf] + nsb_additional_http_listen_configuration)|select('sequence')|list }}" # noqa 204
-    nsb_c_https_net_listen_conf: "{{ ([nsb_c_https_ipv4_listen_conf]  +  [nsb_c_https_ipv6_listen_conf] + nsb_additional_https_listen_configuration)|select('sequence')|list }}" # noqa 204
+    nsb_c_http_net_listen_conf: "{{ ([nsb_c_http_ipv4_listen_conf]  +  [nsb_c_http_ipv6_listen_conf] + nsb_additional_http_listen_configuration)|select('sequence')|list }}"  # noqa 204
+    nsb_c_https_net_listen_conf: "{{ ([nsb_c_https_ipv4_listen_conf]  +  [nsb_c_https_ipv6_listen_conf] + nsb_additional_https_listen_configuration)|select('sequence')|list }}"  # noqa 204
 
 - name: SITE | Deploy server configuration file
   template:
