@@ -12,7 +12,7 @@
 
 - name: PRE | Get string with all involved domains
   set_fact:
-    nsb_c_domains_string:  "{{ nsb_domains | join(' ') }}"
+    nsb_c_domains_string: "{{ nsb_domains | join(' ') }}"
 
 - name: PRE | Pack HTTP IPv4 configuration
   set_fact:
