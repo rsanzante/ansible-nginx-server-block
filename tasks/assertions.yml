@@ -1,19 +1,23 @@
 ---
 
-- fail:
+- name: Check certificate file is set when SSL is requested.
+  fail:
     msg: "SSL is requested but certificate file is not set. Please set nsb_ssl_certificate_file variable with the path to the certificate file."
   when: nsb_https_enabled and nsb_ssl_certificate_file is undefined
 
-- fail:
+- name: Check certificate key file is set when SSL is requested.
+  fail:
     msg: "SSL is requested but certificate key file is not set. Please set nsb_ssl_certificate_key_file variable with the path to the certificate key file."
   when: nsb_https_enabled and nsb_ssl_certificate_key_file is undefined
 
-- fail:
+- name: Check at least one domain is provided.
+  fail:
     msg: "The domain list es empty. Please provide at least one domain name in the nsb_domains variable."
   when: nsb_domains| length == 0
 
-- fail:
-    msg: "Invalid configuration: basic_auth_off and  basic_auth_enabled can't be both enabled in the same restriction block. Ofending block's match property: '{{ item.match }}'"
+- name: Check basic_auth_off and basic_auth_enabled aren't both enabled in the same restriction block.
+  fail:
+    msg: "Invalid configuration: basic_auth_off and  basic_auth_enabled can't be both enabled in the same restriction block. Ofending block's match property: '{{ item.match }}'" # noqa 204
   when:
     - item.restriction is defined
     - item.restriction.basic_auth_off is defined
