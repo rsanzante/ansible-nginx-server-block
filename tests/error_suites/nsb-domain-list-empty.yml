@@ -13,4 +13,3 @@
         - match: "/"
           body: |
             index  index.html;
-

@@ -23,4 +23,3 @@
           restriction:
             basic_auth_off: yes
             basic_auth_enabled: yes
-
