@@ -7,3 +7,4 @@ nsb_c_http_ipv6_listen_conf: null
 nsb_c_https_ipv4_listen_conf: null
 nsb_c_https_ipv6_listen_conf: null
 nsb_c_main_domain: null
+nsb_c_enabled_predefined_locations: []

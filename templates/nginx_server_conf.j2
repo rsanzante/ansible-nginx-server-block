@@ -18,6 +18,22 @@ auth_basic "{{ restriction.basic_auth_name }}";
 auth_basic_user_file {{ restriction.basic_auth_passwd_filepath }};
 {% endif %}
 {%- endmacro %}
+{# #}
+{# #}
+{# #}
+{# #}
+{# Use a macro for locations (predefined and custom) #}
+{% macro locationMacro(location) -%}
+{% if location.comment is defined %}{{ location.comment }}{% endif %}
+location {{ location.match }} {
+  {% if location.restriction is defined and location.restriction %}
+    {% set restriction = location.restriction %}
+{{ restrictionMacro(restriction)|indent( width=2, indentfirst=True) }}
+  {% endif %}
+{{ location.body|indent(2, indentfirst=True)}}
+}
+
+{%- endmacro %}
 # {{ ansible_managed }}
 
 # Server configuration for {{ nsb_c_main_domain }}
@@ -79,6 +95,7 @@ server {
   {% endif %}
   {% if nsb_docroot_path is defined %}
 
+  # Root path.
   root {{ nsb_docroot_path }};
   {% endif %}
   {% if nsb_use_error_log_file_for_site or nsb_use_access_log_file_for_site %}
@@ -91,21 +108,10 @@ server {
   error_log {{ nsb_log_dir_path}}/{{ nsb_c_main_domain }}-error.log {{ nsb_log_error_level }};
     {% endif %}
   {% endif %}
-  {% if nsb_feature_dont_log_favicon %}
+  {% if nsb_server_additional_conf %}
 
-  # Do not log favicon.ico.
-  location = /favicon.ico {
-    log_not_found off;
-    access_log off;
-  }
-  {% endif %}
-  {% if nsb_feature_dont_log_robots_txt %}
-
-  # Do not log robots.txt.
-  location = /robots.txt {
-    log_not_found off;
-    access_log off;
-  }
+  # Additional configuration.
+  {{ nsb_server_additional_conf|indent(2, False)}}
   {% endif %}
   {% if nsb_feature_allow_well_known_rfc_5785 %}
 
@@ -115,47 +121,17 @@ server {
     allow all;
   }
   {% endif %}
-  {% if nsb_feature_block_hidden_dirs %}
+  {% for location in nsb_c_enabled_predefined_locations + nsb_locations %}
 
+    {% if location.predefined is defined and nsb_predefined_locations[location.predefined] is defined %}
+      {# This is a predefined location and there's a definition for it. #}
+{{ locationMacro(nsb_predefined_locations[location.predefined])|indent( width=2, indentfirst=True) }}
 
-  # Block hidden directories (those that begin with a period). This includes
-  # CVS directories and others.
-  location ~ (^|/)\. {
-    return 403;
-  }
-  {% endif %}
-  {% if nsb_feature_block_php_source_and_related_files %}
+    {% elif location.match is defined %}
+      {# This is a custom location. #}
+{{ locationMacro(location)|indent( width=2, indentfirst=True) }}
 
-  # Block certain files that may contain confidentual information.
-  location ~* \.(engine|inc|info|install|make|module|profile|test|po|sh|.*sql|theme|twig|tpl(\.php)?|xtmpl|yml)(~|\.sw[op]|\.bak|\.old|\.orig|\.save)?$|^(\.(?!well-known).*|Entries.*|Repository|Root|Tag|Template|composer\.(json|lock))$|^#.*#$|\.php(~|\.sw[op]|\.bak|\.orig|\.save)$|^.*\.php$ {
-    deny all;
-  }
-  {% endif %}
-  {% if nsb_feature_ignore_ht_files %}
-
-  # Block Apache's .ht* files.
-  location ~/\.ht {
-    deny all;
-    {% if nsb_feature_ht_files_mask_404 %}
-    return 404;
     {% endif %}
-  }
-  {% endif %}
-  {% if nsb_server_additional_conf %}
-
-  # Additional configuration.
-  {{ nsb_server_additional_conf|indent(2, False)}}
-  {% endif %}
-  {% for location in nsb_locations %}
-
-  location {{ location.match }} {
-    {% if location.restriction is defined and location.restriction %}
-      {% set restriction = location.restriction %}
-{{ restrictionMacro(restriction)|indent( width=4, indentfirst=True) }}
-    {% endif %}
-    {{ location.body|indent(4, False)}}
-  }
-
   {% endfor %}
 }
 {% endif %}

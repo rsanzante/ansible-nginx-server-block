@@ -85,13 +85,6 @@ function set_params_per_distro() {
     opts="--privileged --volume=/sys/fs/cgroup:/sys/fs/cgroup:ro"
     pmanager="apt-get"
     packages="nginx-full curl"
-  # Fedora 24
-  elif [ $distro_name = 'fedora24' ]; then
-    init="/usr/lib/systemd/systemd"
-    opts="--privileged --volume=/sys/fs/cgroup:/sys/fs/cgroup:ro"
-    pmanager="yum"
-    packages="nginx procps"
-    ansible_extra_vars="-e nsb_nginx_sites_available_path=conf.d -e nsb_nginx_sites_enabled_path=conf.d -e nsb_distro_allows_disabling_sites=False"
   # Fedora 27
   elif [ $distro_name = 'fedora27' ]; then
     init="/usr/lib/systemd/systemd"
@@ -99,13 +92,22 @@ function set_params_per_distro() {
     pmanager="yum"
     packages="nginx procps"
     ansible_extra_vars="-e nsb_nginx_sites_available_path=conf.d -e nsb_nginx_sites_enabled_path=conf.d -e nsb_distro_allows_disabling_sites=False"
+  # Fedora 29. Not ready. Last time there was an error related aparently to this bug:
+  # https://bugzilla.redhat.com/show_bug.cgi?id=1565425
+#   elif [ $distro_name = 'fedora29' ]; then
+#     init="/usr/lib/systemd/systemd"
+#     opts="--privileged --volume=/sys/fs/cgroup:/sys/fs/cgroup:ro"
+#     pmanager="yum"
+#     packages="nginx procps"
+#     ansible_extra_vars="-e nsb_nginx_sites_available_path=conf.d -e nsb_nginx_sites_enabled_path=conf.d -e nsb_distro_allows_disabling_sites=False"
+
   else
     err "Unkown distro name: $distro_name"
   fi
 
 }
 
-# Logs a message if equal or greater than ucrrent verbose level.
+# Logs a message if equal or greater than current verbose level.
 # $1 Message log level.
 # $2 Message to display.
 function log_msg() {
@@ -137,7 +139,8 @@ function log_suite_header() {
 }
 
 # Displays a log notice.
-# $1 Notice to display.
+# $1 Log level.
+# $2 Notice to display.
 function log_notice() {
   level=$1
   indentation=$(( $level == 0 ? 0 : level-1 ))
@@ -162,6 +165,11 @@ function log_cmd() {
 # $1 Test name to display.
 function log_test() {
   log_msg 0 "\n${yellowf}${*}${reset}\n"
+}
+
+function log_ansible_version() {
+  log_header "Ansible info"
+  $docker_exec ansible --version
 }
 
 function run_cmd() {
@@ -232,6 +240,9 @@ function run_suite () {
   if [ $REUSE_CONTAINER -eq 0 ]; then prepare_docker_container $docker_image; fi
   post_prepare_docker_container
 
+  # Log Ansible info.
+  log_ansible_version
+
   if [ $DRY_MODE -eq 1 ]
   then
     log_notice 0 "Not performing test because dry mode is enabled."
@@ -284,7 +295,7 @@ function discover_test_error_playbooks() {
 }
 
 function run_error_playbook () {
-  # Disable erro trap because command should return error.
+  # Disable error trap because command should return error.
   set +e
 
   error_playbook_title=$(basename "$playbook_path" .yml)
@@ -365,7 +376,7 @@ function remove_docker_container() {
   $simcom docker rm -f $container_id > /dev/null
 }
 
-# Prepares a domain for test creating a symlink to its code and adding it it to
+# Prepares a domain for test creating a symlink to its code and adding it to
 # /etc/hosts.
 function prepare_domain() {
   $docker_exec test -L /var/vhosts/$1 ||
@@ -389,6 +400,17 @@ function perform_tests() {
 
   echo $output | grep -q '.*failed=0' \
     || err "Error running Ansible playbook"
+
+  log_msg 2 "Environment configuration"
+
+  # DEBUG
+  set +e
+  output=$(run_cmd $docker_exec cat /etc/nginx/sites-enabled/restriction-example3.test.conf)
+  echo "$output" >&6
+  set -e
+
+
+
 
   log_header "Starting tests"
   execute_suite

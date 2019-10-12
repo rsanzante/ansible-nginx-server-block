@@ -13,12 +13,12 @@ env:
   - distro_name: ubuntu1404
   - distro_name: centos7
   - distro_name: fedora27
-  - distro_name: fedora24
+
 
 
 script:
 
-  - tests/test.sh
+  - tests/test.sh -vvvv
 
 notifications:
   webhooks: https://galaxy.ansible.com/api/v1/notifications/
