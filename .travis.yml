@@ -10,7 +10,6 @@ env:
   - distro_name: debian8
   - distro_name: ubuntu1804
   - distro_name: ubuntu1604
-  - distro_name: ubuntu1404
   - distro_name: centos7
   - distro_name: fedora27
 
