@@ -74,6 +74,7 @@ http://nginx.org/en/docs/http/ngx_http_core_module.html#location for more info.
   nsb_feature_dont_log_robots_txt is enabled. You can add it to nsb_locations if you
   prefer to control where it's placed.
 
+- images_bypass_basic_auth: Sometimes is interesting to allow access only to image files. For example, development environments protectec by Basic Auth could benefit from this so external services like email readers can access images embedded in the email body. Not all images bypass the Baisc Auth,m only the typical web content formats: JPEG, WebP, PNG, GIF and SVG.
 
 
 **Restriction**
