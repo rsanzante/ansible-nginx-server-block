@@ -49,10 +49,11 @@ If `nsb_distro_allows_disabling_sites` is no, role deploys conf file in
 **Predefined locations**
 
 This role provides some predefined locations that can be added to server block
-locations. Keep in mind that those locations have certain match rules that can
-interfere with other custom locations. First locations have higher priority.
-See http://nginx.org/en/docs/http/ngx_http_core_module.html#location for more
-info.
+locations. See ```nsb_locations```.
+
+Keep in mind that those locations have certain match rules that can interfere
+with other custom locations. First locations have higher priority. See
+http://nginx.org/en/docs/http/ngx_http_core_module.html#location for more info.
 
 - block_hidden_dirs: Blocks any hidden file or directory (those that begins with
  a period. If nsb_feature_blocked_to_404 is set to yes a 404 is returned instead of a
@@ -172,8 +173,8 @@ Or this one: https://galaxy.ansible.com/jdauphant/nginx/
 
 - nsb_locations: []
 
-  List of server locations. Each location have the following
-  properties:
+  List of server locations. Each location can have two forms. One is the custom
+  locatins and they have the following properties:
 
   - match: Location's  match clause. Mandatory.
     Ex: `/`, `/status`, `^~ /images/`, `~* \.(gif|jpg|jpeg)$`
@@ -182,6 +183,10 @@ Or this one: https://galaxy.ansible.com/jdauphant/nginx/
 
   - restriction: Restriction block attached to this location. See
   **Restriction** section. This property is optional.
+
+  The second form is when you want to add predefined location. In that case only
+  a ```predefined``` property is needed. The proprerty should have the
+  predefined location name.
 
 - nsb_server_block_enabled: yes
 
