@@ -1,6 +1,6 @@
 ---
 
-- include: assertions.yml
+- import_tasks: assertions.yml
 
 - name: PRE | Get main domain.
   set_fact:
