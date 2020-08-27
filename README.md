@@ -76,6 +76,7 @@ http://nginx.org/en/docs/http/ngx_http_core_module.html#location for more info.
 
 - images_bypass_basic_auth: Sometimes is interesting to allow access only to image files. For example, development environments protectec by Basic Auth could benefit from this so external services like email readers can access images embedded in the email body. Not all images bypass the Baisc Auth,m only the typical web content formats: JPEG, WebP, PNG, GIF and SVG.
 
+- block_sensitive_files: Block certain files that may contain confidential information. For example: .sql, .mysql, .php, .install, .module, .yml, .orig, .json, .lock, etc.
 
 **Restriction**
 
