@@ -95,6 +95,13 @@ nsb_predefined_locations:
     match: '~* \.(engine|inc|info|install|make|module|profile|test|po|sh|.*sql|theme|twig|tpl(\.php)?|xtmpl|yml)(~|\.sw[op]|\.bak|\.old|\.orig|\.save)?$|^(\.(?!well-known).*|Entries.*|Repository|Root|Tag|Template|composer\.(json|lock))$|^#.*#$|\.php(~|\.sw[op]|\.bak|\.orig|\.save)$|^.*\.php$'
     body: "deny all;"
 
+  images_bypass_basic_auth:
+    comment: |
+      # Bypass Basic Auth on image requests.
+    match: '~* (.*\.jpg$|.*\.jpeg$|.*\.png$|.*\.webp$|.*\.svg$|.*\.gif$)'
+    body: |
+      auth_basic off;
+      allow all;
 
 
 # Logs configuration.
